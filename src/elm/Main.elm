@@ -66,16 +66,16 @@ drugPosition drug =
     elemIndex drug drugs |> Maybe.withDefault 0
 
 
-type DrugCount
-    = DrugCount Int
+type DrugQuantity
+    = DrugQuantity Int
 
 
 type alias DrugHolding =
-    ( Drug, DrugCount )
+    ( Drug, DrugQuantity )
 
 
 type alias DrugCollection =
-    AllDict Drug DrugCount Int
+    AllDict Drug DrugQuantity Int
 
 
 type alias Inventory =
@@ -162,18 +162,18 @@ displayTrenchCoat inventory =
 displayAvailableSlots : Inventory -> List (Html a)
 displayAvailableSlots inventory =
     [ dt [] [ text "Slots available" ]
-    , dd [] [ text <| displayDrugCount (totalDrugs inventory.drugs) inventory.maxHolding ]
+    , dd [] [ text <| displayDrugQuantity (totalDrugs inventory.drugs) inventory.maxHolding ]
     ]
 
 
-displayDrugCount : DrugCount -> Int -> String
-displayDrugCount (DrugCount count) maxHolding =
+displayDrugQuantity : DrugQuantity -> Int -> String
+displayDrugQuantity (DrugQuantity count) maxHolding =
     (toString <| maxHolding - count) ++ "/" ++ (toString maxHolding)
 
 
-totalDrugs : DrugCollection -> DrugCount
+totalDrugs : DrugCollection -> DrugQuantity
 totalDrugs =
-    DrugCount << AllDict.foldl (\_ (DrugCount count) acc -> acc + count) 0
+    DrugQuantity << AllDict.foldl (\_ (DrugQuantity count) acc -> acc + count) 0
 
 
 displayGun : GunCount -> List (Html a)
@@ -191,12 +191,12 @@ displayDrugs stash =
 lookupHolding : DrugCollection -> Drug -> DrugHolding
 lookupHolding stash drug =
     AllDict.get drug stash
-        |> Maybe.withDefault (DrugCount 0)
+        |> Maybe.withDefault (DrugQuantity 0)
         |> (,) drug
 
 
 displayDrug : DrugHolding -> List (Html a)
-displayDrug ( drug, DrugCount count ) =
+displayDrug ( drug, DrugQuantity count ) =
     [ dt [] [ text <| toString drug ]
     , dd [] [ text <| toString count ]
     ]
