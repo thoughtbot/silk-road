@@ -4,6 +4,7 @@ import AllDict exposing (AllDict)
 import Html exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra exposing (elemIndex)
+import Dollar exposing (Dollar(..))
 
 
 main : Program Never Model Msg
@@ -34,10 +35,6 @@ initialPrices =
 
 type alias Prices =
     AllDict Drug Dollar Int
-
-
-type Dollar
-    = Dollar Int
 
 
 type GunCount
@@ -164,11 +161,8 @@ buyMax model drug =
             { oldTrenchcoat
                 | drugs = AllDict.insert drug (addQuantity purchaseableDrugQuantity_ <| Maybe.withDefault (DrugQuantity 0) <| AllDict.get drug oldTrenchcoat.drugs) oldTrenchcoat.drugs
             }
-
-        subtractDollars (Dollar a) (Dollar b) =
-            Dollar <| a - b
     in
-        { model | cashOnHand = subtractDollars model.cashOnHand totalPurchasePrice, trenchCoat = newTrenchcoat }
+        { model | cashOnHand = Dollar.subtract model.cashOnHand totalPurchasePrice, trenchCoat = newTrenchcoat }
 
 
 purchaseableDrugQuantity : Model -> Drug -> DrugQuantity
