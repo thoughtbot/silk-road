@@ -48,8 +48,16 @@ type Drug
     | Ludes
 
 
+type DrugCount
+    = DrugCount Int
+
+
+type alias DrugHolding =
+    ( Drug, DrugCount )
+
+
 type alias Stash =
-    AllDict Drug Int String
+    AllDict Drug DrugCount String
 
 
 type alias Inventory =
@@ -68,6 +76,17 @@ type alias Model =
     , debt : Dollar
     , bankAccountBalance : Dollar
     }
+
+
+drugs : List Drug
+drugs =
+    [ Cocaine
+    , Heroin
+    , Acid
+    , Weed
+    , Speed
+    , Ludes
+    ]
 
 
 emptyAllDict : AllDict a b String
@@ -120,8 +139,15 @@ displayGun (GunCount guns) =
 
 
 displayDrugs : Stash -> List (Html a)
-displayDrugs =
-    List.concatMap displayDrug << AllDict.toList
+displayDrugs stash =
+    List.concatMap (displayDrug << lookupHolding stash) drugs
+
+
+lookupHolding : Stash -> Drug -> DrugHolding
+lookupHolding stash drug =
+    AllDict.get drug stash
+        |> Maybe.withDefault (DrugCount 0)
+        |> (,) drug
 
 
 displayTrenchcoat : Int -> List (Html a)
@@ -131,8 +157,8 @@ displayTrenchcoat maxHolding =
     ]
 
 
-displayDrug : ( Drug, Int ) -> List (Html a)
-displayDrug ( drug, count ) =
+displayDrug : DrugHolding -> List (Html a)
+displayDrug ( drug, DrugCount count ) =
     [ dt [] [ text <| toString drug ]
     , dd [] [ text <| toString count ]
     ]
