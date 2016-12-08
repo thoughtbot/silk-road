@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import AllDict exposing (AllDict)
 import Html exposing (..)
+import Html.Events exposing (onClick)
 import List.Extra exposing (elemIndex)
 
 
@@ -126,6 +127,7 @@ model =
 
 type Msg
     = NoOp
+    | BuyMax Drug
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -134,8 +136,72 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        BuyMax drug ->
+            ( buyMax model drug, Cmd.none )
 
-view : Model -> Html a
+
+buyMax : Model -> Drug -> Model
+buyMax model drug =
+    let
+        purchaseableDrugQuantity_ =
+            purchaseableDrugQuantity model drug
+
+        totalPurchasePrice =
+            multiplyThings
+                purchaseableDrugQuantity_
+                (Maybe.withDefault (Dollar 0) <| AllDict.get drug model.currentPrices)
+
+        multiplyThings (DrugQuantity quantity) (Dollar amount) =
+            Dollar <| quantity * amount
+
+        addQuantity (DrugQuantity a) (DrugQuantity b) =
+            DrugQuantity <| a + b
+
+        oldTrenchcoat =
+            model.trenchCoat
+
+        newTrenchcoat =
+            { oldTrenchcoat
+                | drugs = AllDict.insert drug (addQuantity purchaseableDrugQuantity_ <| Maybe.withDefault (DrugQuantity 0) <| AllDict.get drug oldTrenchcoat.drugs) oldTrenchcoat.drugs
+            }
+
+        subtractDollars (Dollar a) (Dollar b) =
+            Dollar <| a - b
+    in
+        { model | cashOnHand = subtractDollars model.cashOnHand totalPurchasePrice, trenchCoat = newTrenchcoat }
+
+
+purchaseableDrugQuantity : Model -> Drug -> DrugQuantity
+purchaseableDrugQuantity model drug =
+    DrugQuantity <|
+        Maybe.withDefault 0 <|
+            List.minimum
+                [ maxQuantityByPrice model.currentPrices model.cashOnHand drug
+                , availableInventorySpace model.trenchCoat
+                ]
+
+
+drugQuantity : DrugQuantity -> Int
+drugQuantity (DrugQuantity v) =
+    v
+
+
+maxQuantityByPrice : Prices -> Dollar -> Drug -> Int
+maxQuantityByPrice prices (Dollar cashOnHand) drug =
+    case AllDict.get drug prices of
+        Just (Dollar foundDrugPrice) ->
+            cashOnHand // foundDrugPrice
+
+        Nothing ->
+            0
+
+
+availableInventorySpace : Inventory -> Int
+availableInventorySpace inventory =
+    inventory.maxHolding - (drugQuantity <| totalDrugs inventory.drugs)
+
+
+view : Model -> Html Msg
 view model =
     div []
         [ displayLocation model.currentLocation
@@ -208,17 +274,20 @@ displayLocation location =
         [ text <| "Current location: " ++ toString location ]
 
 
-displayCurrentPrices : Prices -> Html a
+displayCurrentPrices : Prices -> Html Msg
 displayCurrentPrices prices =
     div []
         [ dl [] (List.concatMap displayPrice <| AllDict.toList prices)
         ]
 
 
-displayPrice : ( Drug, Dollar ) -> List (Html a)
+displayPrice : ( Drug, Dollar ) -> List (Html Msg)
 displayPrice ( drug, dollar ) =
     [ dt [] [ text <| toString drug ]
-    , dd [] [ text <| displayDollars dollar ]
+    , dd []
+        [ text <| displayDollars dollar
+        , button [ onClick <| BuyMax drug ] [ text "Buy max" ]
+        ]
     ]
 
 
