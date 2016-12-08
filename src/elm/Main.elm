@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import AllDict exposing (AllDict)
 import Html exposing (..)
+import List.Extra exposing (elemIndex)
 
 
 main : Program Never Model Msg
@@ -14,12 +15,24 @@ main =
         }
 
 
+initialPrices : Prices
+initialPrices =
+    [ ( Cocaine, Dollar 15000 )
+    , ( Heroin, Dollar 5000 )
+    , ( Acid, Dollar 1000 )
+    , ( Weed, Dollar 300 )
+    , ( Speed, Dollar 70 )
+    , ( Ludes, Dollar 10 )
+    ]
+        |> AllDict.fromList drugPosition
+
+
 
 -- MODEL
 
 
 type alias Prices =
-    AllDict Drug Dollar String
+    AllDict Drug Dollar Int
 
 
 type Dollar
@@ -48,6 +61,11 @@ type Drug
     | Ludes
 
 
+drugPosition : Drug -> Int
+drugPosition drug =
+    elemIndex drug drugs |> Maybe.withDefault 0
+
+
 type DrugCount
     = DrugCount Int
 
@@ -57,7 +75,7 @@ type alias DrugHolding =
 
 
 type alias DrugCollection =
-    AllDict Drug DrugCount String
+    AllDict Drug DrugCount Int
 
 
 type alias Inventory =
@@ -89,16 +107,16 @@ drugs =
     ]
 
 
-emptyAllDict : AllDict a b String
+emptyAllDict : AllDict Drug b Int
 emptyAllDict =
-    AllDict.empty toString
+    AllDict.empty drugPosition
 
 
 model : Model
 model =
     Model
         Manhattan
-        emptyAllDict
+        initialPrices
         (Dollar 2000)
         (Inventory emptyAllDict 100 (GunCount 0))
         emptyAllDict
@@ -122,6 +140,7 @@ view model =
     div []
         [ displayLocation model.currentLocation
         , displayTrenchCoat model.trenchCoat
+        , displayCurrentPrices model.currentPrices
         ]
 
 
@@ -181,3 +200,22 @@ displayLocation : Location -> Html a
 displayLocation location =
     div []
         [ text <| "Current location: " ++ toString location ]
+
+
+displayCurrentPrices : Prices -> Html a
+displayCurrentPrices prices =
+    div []
+        [ dl [] (List.concatMap displayPrice <| AllDict.toList prices)
+        ]
+
+
+displayPrice : ( Drug, Dollar ) -> List (Html a)
+displayPrice ( drug, dollar ) =
+    [ dt [] [ text <| toString drug ]
+    , dd [] [ text <| displayDollars dollar ]
+    ]
+
+
+displayDollars : Dollar -> String
+displayDollars (Dollar amount) =
+    "$" ++ toString amount
