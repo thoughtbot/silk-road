@@ -5,9 +5,16 @@ type Dollar
     = Dollar Int
 
 
-add (Dollar a) (Dollar b) =
-    Dollar <| a + b
+add : Dollar -> Dollar -> Dollar
+add =
+    map2 (+)
 
 
-subtract (Dollar a) (Dollar b) =
-    Dollar <| a - b
+subtract : Dollar -> Dollar -> Dollar
+subtract =
+    map2 (-)
+
+
+map2 : (Int -> Int -> Int) -> Dollar -> Dollar -> Dollar
+map2 f (Dollar a) (Dollar b) =
+    Dollar <| f a b
