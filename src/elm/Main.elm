@@ -79,6 +79,7 @@ model =
 type Msg
     = NoOp
     | BuyMax Drug
+    | SellAll Drug
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -89,6 +90,31 @@ update msg model =
 
         BuyMax drug ->
             ( buyMax model drug, Cmd.none )
+
+        SellAll drug ->
+            ( sellAll model drug, Cmd.none )
+
+
+sellAll : Model -> Drug -> Model
+sellAll model drug =
+    let
+        multiplyThings (DrugQuantity quantity) (Dollar amount) =
+            Dollar <| quantity * amount
+
+        totalSalePrice =
+            multiplyThings
+                (Inventory.quantityOfDrug model.trenchCoat.drugs drug)
+                (Maybe.withDefault Dollar.zero <| AllDict.get drug model.currentPrices)
+
+        oldTrenchcoat =
+            model.trenchCoat
+
+        newTrenchcoat =
+            { oldTrenchcoat
+                | drugs = AllDict.remove drug oldTrenchcoat.drugs
+            }
+    in
+        { model | cashOnHand = Dollar.add model.cashOnHand totalSalePrice, trenchCoat = newTrenchcoat }
 
 
 buyMax : Model -> Drug -> Model
@@ -150,7 +176,7 @@ displayCashOnHand dollar =
     div [] [ text <| "Cash on hand: " ++ displayDollars dollar ]
 
 
-displayTrenchCoat : Inventory -> Html a
+displayTrenchCoat : Inventory -> Html Msg
 displayTrenchCoat inventory =
     dl []
         (displayGun inventory.guns
@@ -178,15 +204,18 @@ displayGun (GunCount guns) =
     ]
 
 
-displayDrugs : DrugCollection -> List (Html a)
+displayDrugs : DrugCollection -> List (Html Msg)
 displayDrugs stash =
     List.concatMap (displayDrug << Inventory.lookupHolding stash) Drug.all
 
 
-displayDrug : DrugHolding -> List (Html a)
+displayDrug : DrugHolding -> List (Html Msg)
 displayDrug ( drug, DrugQuantity count ) =
     [ dt [] [ text <| toString drug ]
-    , dd [] [ text <| toString count ]
+    , dd []
+        [ text <| toString count
+        , button [ onClick <| SellAll drug ] [ text "Sell all" ]
+        ]
     ]
 
 

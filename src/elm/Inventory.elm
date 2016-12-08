@@ -24,11 +24,15 @@ type alias Inventory =
     }
 
 
-lookupHolding : DrugCollection -> Drug -> DrugHolding
-lookupHolding drugCollection drug =
+quantityOfDrug : DrugCollection -> Drug -> DrugQuantity
+quantityOfDrug drugCollection drug =
     AllDict.get drug drugCollection
         |> Maybe.withDefault (DrugQuantity 0)
-        |> (,) drug
+
+
+lookupHolding : DrugCollection -> Drug -> DrugHolding
+lookupHolding drugCollection drug =
+    ( drug, quantityOfDrug drugCollection drug )
 
 
 availableInventorySpace : Inventory -> DrugQuantity
