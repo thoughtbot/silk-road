@@ -56,12 +56,12 @@ type alias DrugHolding =
     ( Drug, DrugCount )
 
 
-type alias Stash =
+type alias DrugCollection =
     AllDict Drug DrugCount String
 
 
 type alias Inventory =
-    { drugs : Stash
+    { drugs : DrugCollection
     , maxHolding : Int
     , guns : GunCount
     }
@@ -71,8 +71,8 @@ type alias Model =
     { currentLocation : Location
     , currentPrices : Prices
     , cashOnHand : Dollar
-    , inventory : Inventory
-    , stash : Stash
+    , trenchCoat : Inventory
+    , stash : DrugCollection
     , debt : Dollar
     , bankAccountBalance : Dollar
     }
@@ -121,14 +121,34 @@ view : Model -> Html a
 view model =
     div []
         [ displayLocation model.currentLocation
-        , displayInventory model.inventory
+        , displayTrenchCoat model.trenchCoat
         ]
 
 
-displayInventory : Inventory -> Html a
-displayInventory inventory =
+displayTrenchCoat : Inventory -> Html a
+displayTrenchCoat inventory =
     dl []
-        (displayGun inventory.guns ++ displayTrenchcoat inventory.maxHolding ++ displayDrugs inventory.drugs)
+        (displayGun inventory.guns
+            ++ displayAvailableSlots inventory
+            ++ displayDrugs inventory.drugs
+        )
+
+
+displayAvailableSlots : Inventory -> List (Html a)
+displayAvailableSlots inventory =
+    [ dt [] [ text "Slots available" ]
+    , dd [] [ text <| displayDrugCount (totalDrugs inventory.drugs) inventory.maxHolding ]
+    ]
+
+
+displayDrugCount : DrugCount -> Int -> String
+displayDrugCount (DrugCount count) maxHolding =
+    (toString <| maxHolding - count) ++ "/" ++ (toString maxHolding)
+
+
+totalDrugs : DrugCollection -> DrugCount
+totalDrugs =
+    DrugCount << AllDict.foldl (\_ (DrugCount count) acc -> acc + count) 0
 
 
 displayGun : GunCount -> List (Html a)
@@ -138,23 +158,16 @@ displayGun (GunCount guns) =
     ]
 
 
-displayDrugs : Stash -> List (Html a)
+displayDrugs : DrugCollection -> List (Html a)
 displayDrugs stash =
     List.concatMap (displayDrug << lookupHolding stash) drugs
 
 
-lookupHolding : Stash -> Drug -> DrugHolding
+lookupHolding : DrugCollection -> Drug -> DrugHolding
 lookupHolding stash drug =
     AllDict.get drug stash
         |> Maybe.withDefault (DrugCount 0)
         |> (,) drug
-
-
-displayTrenchcoat : Int -> List (Html a)
-displayTrenchcoat maxHolding =
-    [ dt [] [ text "Trenchcoat" ]
-    , dd [] [ text <| toString maxHolding ]
-    ]
 
 
 displayDrug : DrugHolding -> List (Html a)
