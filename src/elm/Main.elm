@@ -139,9 +139,15 @@ view : Model -> Html a
 view model =
     div []
         [ displayLocation model.currentLocation
+        , displayCashOnHand model.cashOnHand
         , displayTrenchCoat model.trenchCoat
         , displayCurrentPrices model.currentPrices
         ]
+
+
+displayCashOnHand : Dollar -> Html a
+displayCashOnHand dollar =
+    div [] [ text <| "Cash on hand: " ++ displayDollars dollar ]
 
 
 displayTrenchCoat : Inventory -> Html a
