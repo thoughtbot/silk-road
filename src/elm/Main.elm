@@ -5,6 +5,7 @@ import Html exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra exposing (elemIndex)
 import Dollar exposing (Dollar(..))
+import DrugQuantity exposing (DrugQuantity(..))
 
 
 main : Program Never Model Msg
@@ -62,10 +63,6 @@ type Drug
 drugPosition : Drug -> Int
 drugPosition drug =
     elemIndex drug drugs |> Maybe.withDefault 0
-
-
-type DrugQuantity
-    = DrugQuantity Int
 
 
 type alias DrugHolding =
@@ -151,15 +148,12 @@ buyMax model drug =
         multiplyThings (DrugQuantity quantity) (Dollar amount) =
             Dollar <| quantity * amount
 
-        addQuantity (DrugQuantity a) (DrugQuantity b) =
-            DrugQuantity <| a + b
-
         oldTrenchcoat =
             model.trenchCoat
 
         newTrenchcoat =
             { oldTrenchcoat
-                | drugs = AllDict.insert drug (addQuantity purchaseableDrugQuantity_ <| Maybe.withDefault (DrugQuantity 0) <| AllDict.get drug oldTrenchcoat.drugs) oldTrenchcoat.drugs
+                | drugs = AllDict.insert drug (DrugQuantity.add purchaseableDrugQuantity_ <| Maybe.withDefault (DrugQuantity 0) <| AllDict.get drug oldTrenchcoat.drugs) oldTrenchcoat.drugs
             }
     in
         { model | cashOnHand = Dollar.subtract model.cashOnHand totalPurchasePrice, trenchCoat = newTrenchcoat }
