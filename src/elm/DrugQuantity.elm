@@ -1,8 +1,15 @@
-module DrugQuantity exposing (DrugQuantity(..), add, subtract)
+module DrugQuantity exposing (DrugQuantity(..), add, subtract, minimum)
 
 
 type DrugQuantity
     = DrugQuantity Int
+
+
+minimum : List DrugQuantity -> Maybe DrugQuantity
+minimum drugQuantities =
+    Maybe.map
+        (\firstValue -> List.foldl (map2 min) firstValue drugQuantities)
+        (List.head drugQuantities)
 
 
 add : DrugQuantity -> DrugQuantity -> DrugQuantity

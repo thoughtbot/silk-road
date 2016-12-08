@@ -3,9 +3,10 @@ module Main exposing (..)
 import AllDict exposing (AllDict)
 import Html exposing (..)
 import Html.Events exposing (onClick)
-import List.Extra exposing (elemIndex)
 import Dollar exposing (Dollar(..))
+import Drug exposing (Drug(..))
 import DrugQuantity exposing (DrugQuantity(..))
+import Inventory exposing (..)
 
 
 main : Program Never Model Msg
@@ -27,7 +28,7 @@ initialPrices =
     , ( Speed, Dollar 70 )
     , ( Ludes, Dollar 10 )
     ]
-        |> AllDict.fromList drugPosition
+        |> AllDict.fromList Drug.drugPosition
 
 
 
@@ -36,10 +37,6 @@ initialPrices =
 
 type alias Prices =
     AllDict Drug Dollar Int
-
-
-type GunCount
-    = GunCount Int
 
 
 type Location
@@ -51,33 +48,8 @@ type Location
     | Brooklyn
 
 
-type Drug
-    = Cocaine
-    | Heroin
-    | Acid
-    | Weed
-    | Speed
-    | Ludes
-
-
-drugPosition : Drug -> Int
-drugPosition drug =
-    elemIndex drug drugs |> Maybe.withDefault 0
-
-
 type alias DrugHolding =
     ( Drug, DrugQuantity )
-
-
-type alias DrugCollection =
-    AllDict Drug DrugQuantity Int
-
-
-type alias Inventory =
-    { drugs : DrugCollection
-    , maxHolding : Int
-    , guns : GunCount
-    }
 
 
 type alias Model =
@@ -91,20 +63,9 @@ type alias Model =
     }
 
 
-drugs : List Drug
-drugs =
-    [ Cocaine
-    , Heroin
-    , Acid
-    , Weed
-    , Speed
-    , Ludes
-    ]
-
-
 emptyAllDict : AllDict Drug b Int
 emptyAllDict =
-    AllDict.empty drugPosition
+    AllDict.empty Drug.drugPosition
 
 
 model : Model
@@ -113,7 +74,7 @@ model =
         Manhattan
         initialPrices
         (Dollar 2000)
-        (Inventory emptyAllDict 100 (GunCount 0))
+        Inventory.empty
         emptyAllDict
         (Dollar 5500)
         (Dollar 0)
@@ -161,32 +122,21 @@ buyMax model drug =
 
 purchaseableDrugQuantity : Model -> Drug -> DrugQuantity
 purchaseableDrugQuantity model drug =
-    DrugQuantity <|
-        Maybe.withDefault 0 <|
-            List.minimum
-                [ maxQuantityByPrice model.currentPrices model.cashOnHand drug
-                , availableInventorySpace model.trenchCoat
-                ]
+    Maybe.withDefault (DrugQuantity 0) <|
+        DrugQuantity.minimum
+            [ maxQuantityByPrice model.currentPrices model.cashOnHand drug
+            , Inventory.availableInventorySpace model.trenchCoat
+            ]
 
 
-drugQuantity : DrugQuantity -> Int
-drugQuantity (DrugQuantity v) =
-    v
-
-
-maxQuantityByPrice : Prices -> Dollar -> Drug -> Int
+maxQuantityByPrice : Prices -> Dollar -> Drug -> DrugQuantity
 maxQuantityByPrice prices (Dollar cashOnHand) drug =
     case AllDict.get drug prices of
         Just (Dollar foundDrugPrice) ->
-            cashOnHand // foundDrugPrice
+            DrugQuantity <| cashOnHand // foundDrugPrice
 
         Nothing ->
-            0
-
-
-availableInventorySpace : Inventory -> Int
-availableInventorySpace inventory =
-    inventory.maxHolding - (drugQuantity <| totalDrugs inventory.drugs)
+            DrugQuantity 0
 
 
 view : Model -> Html Msg
@@ -216,18 +166,13 @@ displayTrenchCoat inventory =
 displayAvailableSlots : Inventory -> List (Html a)
 displayAvailableSlots inventory =
     [ dt [] [ text "Slots available" ]
-    , dd [] [ text <| displayDrugQuantity (totalDrugs inventory.drugs) inventory.maxHolding ]
+    , dd [] [ text <| displayDrugQuantity (Inventory.availableInventorySpace inventory) inventory.maxHolding ]
     ]
 
 
-displayDrugQuantity : DrugQuantity -> Int -> String
-displayDrugQuantity (DrugQuantity count) maxHolding =
-    (toString <| maxHolding - count) ++ "/" ++ (toString maxHolding)
-
-
-totalDrugs : DrugCollection -> DrugQuantity
-totalDrugs =
-    DrugQuantity << AllDict.foldl (\_ (DrugQuantity count) acc -> acc + count) 0
+displayDrugQuantity : DrugQuantity -> DrugQuantity -> String
+displayDrugQuantity (DrugQuantity available) (DrugQuantity maxHolding) =
+    (toString available) ++ "/" ++ (toString maxHolding)
 
 
 displayGun : GunCount -> List (Html a)
@@ -239,7 +184,7 @@ displayGun (GunCount guns) =
 
 displayDrugs : DrugCollection -> List (Html a)
 displayDrugs stash =
-    List.concatMap (displayDrug << lookupHolding stash) drugs
+    List.concatMap (displayDrug << lookupHolding stash) Drug.all
 
 
 lookupHolding : DrugCollection -> Drug -> DrugHolding
