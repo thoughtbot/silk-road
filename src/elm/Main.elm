@@ -26,6 +26,10 @@ type Dollar
     = Dollar Int
 
 
+type GunCount
+    = GunCount Int
+
+
 type Location
     = Manhattan
     | Bronx
@@ -45,13 +49,13 @@ type Drug
 
 
 type alias Stash =
-    Dict Drug Int
+    Dict String Int
 
 
 type alias Inventory =
     { drugs : Stash
     , maxHolding : Int
-    , guns : Int
+    , guns : GunCount
     }
 
 
@@ -72,7 +76,7 @@ model =
         Manhattan
         Dict.empty
         (Dollar 2000)
-        (Inventory Dict.empty 100 0)
+        (Inventory Dict.empty 100 (GunCount 0))
         Dict.empty
         (Dollar 5500)
         (Dollar 0)
@@ -91,4 +95,45 @@ update msg model =
 
 view : Model -> Html a
 view model =
-    div [] [ text "hello world" ]
+    div []
+        [ displayLocation model.currentLocation
+        , displayInventory model.inventory
+        ]
+
+
+displayInventory : Inventory -> Html a
+displayInventory inventory =
+    dl []
+        (displayGun inventory.guns ++ displayTrenchcoat inventory.maxHolding ++ displayDrugs inventory.drugs)
+
+
+displayGun : GunCount -> List (Html a)
+displayGun (GunCount guns) =
+    [ dt [] [ text "Guns" ]
+    , dd [] [ text <| toString guns ]
+    ]
+
+
+displayDrugs : Stash -> List (Html a)
+displayDrugs =
+    List.concatMap displayDrug << Dict.toList
+
+
+displayTrenchcoat : Int -> List (Html a)
+displayTrenchcoat maxHolding =
+    [ dt [] [ text "Trenchcoat" ]
+    , dd [] [ text <| toString maxHolding ]
+    ]
+
+
+displayDrug : ( String, Int ) -> List (Html a)
+displayDrug ( drugName, count ) =
+    [ dt [] [ text drugName ]
+    , dd [] [ text <| toString count ]
+    ]
+
+
+displayLocation : Location -> Html a
+displayLocation location =
+    div []
+        [ text <| "Current location: " ++ toString location ]
