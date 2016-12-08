@@ -1,8 +1,13 @@
-module Dollar exposing (Dollar(..), add, subtract)
+module Dollar exposing (Dollar(..), add, subtract, zero)
 
 
 type Dollar
     = Dollar Int
+
+
+zero : Dollar
+zero =
+    Dollar 0
 
 
 add : Dollar -> Dollar -> Dollar

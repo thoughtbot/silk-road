@@ -6,7 +6,7 @@ import Html.Events exposing (onClick)
 import Dollar exposing (Dollar(..))
 import Drug exposing (Drug(..))
 import DrugQuantity exposing (DrugQuantity(..))
-import Inventory exposing (..)
+import Inventory exposing (GunCount(..), DrugCollection, Inventory, DrugHolding)
 
 
 main : Program Never Model Msg
@@ -48,10 +48,6 @@ type Location
     | Brooklyn
 
 
-type alias DrugHolding =
-    ( Drug, DrugQuantity )
-
-
 type alias Model =
     { currentLocation : Location
     , currentPrices : Prices
@@ -77,7 +73,7 @@ model =
         Inventory.empty
         emptyAllDict
         (Dollar 5500)
-        (Dollar 0)
+        Dollar.zero
 
 
 type Msg
@@ -104,7 +100,7 @@ buyMax model drug =
         totalPurchasePrice =
             multiplyThings
                 purchaseableDrugQuantity_
-                (Maybe.withDefault (Dollar 0) <| AllDict.get drug model.currentPrices)
+                (Maybe.withDefault Dollar.zero <| AllDict.get drug model.currentPrices)
 
         multiplyThings (DrugQuantity quantity) (Dollar amount) =
             Dollar <| quantity * amount
@@ -184,14 +180,7 @@ displayGun (GunCount guns) =
 
 displayDrugs : DrugCollection -> List (Html a)
 displayDrugs stash =
-    List.concatMap (displayDrug << lookupHolding stash) Drug.all
-
-
-lookupHolding : DrugCollection -> Drug -> DrugHolding
-lookupHolding stash drug =
-    AllDict.get drug stash
-        |> Maybe.withDefault (DrugQuantity 0)
-        |> (,) drug
+    List.concatMap (displayDrug << Inventory.lookupHolding stash) Drug.all
 
 
 displayDrug : DrugHolding -> List (Html a)

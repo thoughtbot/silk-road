@@ -13,11 +13,22 @@ type alias DrugCollection =
     AllDict Drug DrugQuantity Int
 
 
+type alias DrugHolding =
+    ( Drug, DrugQuantity )
+
+
 type alias Inventory =
     { drugs : DrugCollection
     , maxHolding : DrugQuantity
     , guns : GunCount
     }
+
+
+lookupHolding : DrugCollection -> Drug -> DrugHolding
+lookupHolding drugCollection drug =
+    AllDict.get drug drugCollection
+        |> Maybe.withDefault (DrugQuantity 0)
+        |> (,) drug
 
 
 availableInventorySpace : Inventory -> DrugQuantity
