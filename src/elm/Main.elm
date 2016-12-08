@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Dict exposing (Dict)
+import AllDict exposing (AllDict)
 import Html exposing (..)
 
 
@@ -19,7 +19,7 @@ main =
 
 
 type alias Prices =
-    Dict Drug Dollar
+    AllDict Drug Dollar String
 
 
 type Dollar
@@ -49,7 +49,7 @@ type Drug
 
 
 type alias Stash =
-    Dict String Int
+    AllDict Drug Int String
 
 
 type alias Inventory =
@@ -70,14 +70,19 @@ type alias Model =
     }
 
 
+emptyAllDict : AllDict a b String
+emptyAllDict =
+    AllDict.empty toString
+
+
 model : Model
 model =
     Model
         Manhattan
-        Dict.empty
+        emptyAllDict
         (Dollar 2000)
-        (Inventory Dict.empty 100 (GunCount 0))
-        Dict.empty
+        (Inventory emptyAllDict 100 (GunCount 0))
+        emptyAllDict
         (Dollar 5500)
         (Dollar 0)
 
@@ -116,7 +121,7 @@ displayGun (GunCount guns) =
 
 displayDrugs : Stash -> List (Html a)
 displayDrugs =
-    List.concatMap displayDrug << Dict.toList
+    List.concatMap displayDrug << AllDict.toList
 
 
 displayTrenchcoat : Int -> List (Html a)
@@ -126,9 +131,9 @@ displayTrenchcoat maxHolding =
     ]
 
 
-displayDrug : ( String, Int ) -> List (Html a)
-displayDrug ( drugName, count ) =
-    [ dt [] [ text drugName ]
+displayDrug : ( Drug, Int ) -> List (Html a)
+displayDrug ( drug, count ) =
+    [ dt [] [ text <| toString drug ]
     , dd [] [ text <| toString count ]
     ]
 
