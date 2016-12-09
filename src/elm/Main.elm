@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import AllDict exposing (AllDict)
 import Html exposing (..)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Dollar exposing (Dollar(..))
 import Drug exposing (Drug(..))
@@ -203,8 +204,8 @@ calculateScore model =
 
 purchaseableDrugQuantity : Model -> Drug -> DrugQuantity
 purchaseableDrugQuantity model drug =
-    Maybe.withDefault (DrugQuantity 0)
-        <| DrugQuantity.minimum
+    Maybe.withDefault (DrugQuantity 0) <|
+        DrugQuantity.minimum
             [ maxQuantityByPrice model.currentPrices model.cashOnHand drug
             , Inventory.availableInventorySpace model.trenchCoat
             ]
@@ -224,16 +225,24 @@ view : Model -> Html Msg
 view model =
     case model.gameState of
         Running ->
-            div []
-                [ displayDaysRemaining model.daysRemaining
-                , displayLocation model.currentLocation
-                , displayDebt model.debt
-                , displayCashOnHand model.cashOnHand
-                , displayTrenchCoat model.trenchCoat
-                , displayEventMessage model.currentEvent
-                , displayCurrentPrices model.currentPrices
-                , displayTravelOptions
-                , displayLoanSharkOptions model.currentLocation
+            main_ []
+                [ section [ class "status" ]
+                    [ h2 [] [ text "Status, buddy" ]
+                    , displayDaysRemaining model.daysRemaining
+                    , displayLocation model.currentLocation
+                    , displayCashOnHand model.cashOnHand
+                    , displayDebt model.debt
+                    , displayTrenchCoat model.trenchCoat
+                    , displayLoanSharkOptions model.currentLocation
+                    ]
+                , section [ class "prices" ]
+                    [ h2 [] [ text "Drug Prices" ]
+                    , displayCurrentPrices model.currentPrices
+                    ]
+                , section [ class "travel" ]
+                    [ h2 [] [ text "Take a trip" ]
+                    , displayTravelOptions
+                    ]
                 ]
 
         Finished ->
@@ -378,8 +387,8 @@ displayDrug : DrugHolding -> List (Html Msg)
 displayDrug ( drug, DrugQuantity count ) =
     [ dt [] [ text <| toString drug ]
     , dd []
-        [ text <| toString count
-        , button [ onClick <| SellAll drug ] [ text "Sell all" ]
+        [ button [ onClick <| SellAll drug ] [ text "Sell all" ]
+        , text <| toString count
         ]
     ]
 
@@ -401,8 +410,8 @@ displayPrice : ( Drug, Dollar ) -> List (Html Msg)
 displayPrice ( drug, dollar ) =
     [ dt [] [ text <| toString drug ]
     , dd []
-        [ text <| displayDollars dollar
-        , button [ onClick <| BuyMax drug ] [ text "Buy max" ]
+        [ button [ onClick <| BuyMax drug ] [ text "Buy max" ]
+        , text <| displayDollars dollar
         ]
     ]
 

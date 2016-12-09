@@ -3,3 +3,42 @@ $icon-font-path: '~bootstrap-sass/assets/fonts/bootstrap/';
 @import '~bootstrap-sass/assets/stylesheets/_bootstrap.scss';
 
 // can add Boostrap overrides, additional Sass/CSS below...
+
+$black: #000;
+$green: #71f442;
+
+body {
+  background: $black;
+  color: $green;
+  font-family: Courier, sans-serif;
+
+  padding: 2em;
+
+  button, input[type=submit] {
+    background: $black;
+  }
+
+  main {
+    display: flex;
+    flex-wrap: no-wrap;
+
+    & > section {
+      flex-grow: 1;
+      width: 33%;
+    }
+  }
+
+  dd button {
+    margin-right: 1em;
+  }
+
+  .travel {
+    ul {
+      padding: 0;
+
+      li {
+        list-style-type: none;
+      }
+    }
+  }
+}
