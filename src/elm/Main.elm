@@ -235,11 +235,8 @@ view model =
                 , main_ []
                     [ section [ class "status" ]
                         [ h2 [] [ text "Status, buddy" ]
-                        , displayDaysRemaining model.daysRemaining
-                        , displayLocation model.currentLocation
-                        , displayCashOnHand model.cashOnHand
-                        , displayDebt model.debt
                         , displayTrenchCoat model.trenchCoat
+                        , displayGameMetadata model
                         , displayLoanSharkOptions model.currentLocation
                         ]
                     , section [ class "prices" ]
@@ -255,6 +252,20 @@ view model =
 
         Finished ->
             displayScore model
+
+
+displayGameMetadata : Model -> Html a
+displayGameMetadata model =
+    dl []
+        [ dt [] [ text "Current location" ]
+        , dd [] [ text <| toString model.currentLocation ]
+        , dt [] [ text "Days remaining" ]
+        , dd [] [ text <| toString model.daysRemaining ]
+        , dt [] [ text "Cash on hand" ]
+        , dd [] [ text <| displayDollars model.cashOnHand ]
+        , dt [] [ text "Debt" ]
+        , dd [] [ text <| displayDollars model.debt ]
+        ]
 
 
 flash : String -> Html a
@@ -330,11 +341,6 @@ priceDropMessage drug =
             "Someone just hit up the local phramacy. CHEAP LUDES!!!"
 
 
-displayDebt : Dollar -> Html a
-displayDebt debt =
-    text <| "Debt: " ++ displayDollars debt
-
-
 displayLoanSharkOptions : Location -> Html Msg
 displayLoanSharkOptions location =
     if location == Bronx then
@@ -352,11 +358,6 @@ displayScore model =
         ]
 
 
-displayDaysRemaining : Int -> Html Msg
-displayDaysRemaining count =
-    text <| "Days remaining: " ++ (toString count)
-
-
 displayTravelOptions : Html Msg
 displayTravelOptions =
     ul []
@@ -369,14 +370,9 @@ displayTravelOptions =
         ]
 
 
-displayCashOnHand : Dollar -> Html a
-displayCashOnHand dollar =
-    div [] [ text <| "Cash on hand: " ++ displayDollars dollar ]
-
-
 displayTrenchCoat : Inventory -> Html Msg
 displayTrenchCoat inventory =
-    dl [] (displayAvailableSlots inventory ++ displayDrugs inventory.drugs)
+    dl [] (displayDrugs inventory.drugs ++ displayAvailableSlots inventory)
 
 
 displayAvailableSlots : Inventory -> List (Html a)
@@ -404,12 +400,6 @@ displayDrug ( drug, DrugQuantity count ) =
         , text <| toString count
         ]
     ]
-
-
-displayLocation : Location -> Html a
-displayLocation location =
-    div []
-        [ text <| "Current location: " ++ toString location ]
 
 
 displayCurrentPrices : Prices -> Html Msg
