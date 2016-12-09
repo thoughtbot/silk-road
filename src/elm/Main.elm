@@ -79,6 +79,7 @@ type Msg
     = NoOp
     | BuyMax Drug
     | SellAll Drug
+    | TravelTo Location
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -92,6 +93,9 @@ update msg model =
 
         SellAll drug ->
             ( sellAll model drug, Cmd.none )
+
+        TravelTo location ->
+            ( { model | currentLocation = location }, Cmd.none )
 
 
 sellAll : Model -> Drug -> Model
@@ -131,8 +135,8 @@ buyMax model drug =
 
 purchaseableDrugQuantity : Model -> Drug -> DrugQuantity
 purchaseableDrugQuantity model drug =
-    Maybe.withDefault (DrugQuantity 0)
-        <| DrugQuantity.minimum
+    Maybe.withDefault (DrugQuantity 0) <|
+        DrugQuantity.minimum
             [ maxQuantityByPrice model.currentPrices model.cashOnHand drug
             , Inventory.availableInventorySpace model.trenchCoat
             ]
@@ -155,6 +159,19 @@ view model =
         , displayCashOnHand model.cashOnHand
         , displayTrenchCoat model.trenchCoat
         , displayCurrentPrices model.currentPrices
+        , displayTravelOptions
+        ]
+
+
+displayTravelOptions : Html Msg
+displayTravelOptions =
+    ul []
+        [ li [] [ button [ onClick (TravelTo Brooklyn) ] [ text "Travel to Brooklyn" ] ]
+        , li [] [ button [ onClick (TravelTo CentralPark) ] [ text "Travel to Central Park" ] ]
+        , li [] [ button [ onClick (TravelTo ConeyIsland) ] [ text "Travel to Coney Island" ] ]
+        , li [] [ button [ onClick (TravelTo Ghetto) ] [ text "Travel to the Ghetto" ] ]
+        , li [] [ button [ onClick (TravelTo Bronx) ] [ text "Travel to the Bronx" ] ]
+        , li [] [ button [ onClick (TravelTo Manhattan) ] [ text "Travel to Manhattan" ] ]
         ]
 
 
