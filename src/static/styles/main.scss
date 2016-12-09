@@ -41,4 +41,16 @@ body {
       }
     }
   }
+
+  .flash {
+    text-align: center;
+
+    animation: glow .5s infinite alternate;
+  }
+
+  @keyframes glow {
+      to {
+          text-shadow: 0 0 1em white;
+      }
+  }
 }

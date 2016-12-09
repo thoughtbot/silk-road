@@ -225,28 +225,36 @@ view : Model -> Html Msg
 view model =
     case model.gameState of
         Running ->
-            main_ []
-                [ section [ class "status" ]
-                    [ h2 [] [ text "Status, buddy" ]
-                    , displayDaysRemaining model.daysRemaining
-                    , displayLocation model.currentLocation
-                    , displayCashOnHand model.cashOnHand
-                    , displayDebt model.debt
-                    , displayTrenchCoat model.trenchCoat
-                    , displayLoanSharkOptions model.currentLocation
-                    ]
-                , section [ class "prices" ]
-                    [ h2 [] [ text "Drug Prices" ]
-                    , displayCurrentPrices model.currentPrices
-                    ]
-                , section [ class "travel" ]
-                    [ h2 [] [ text "Take a trip" ]
-                    , displayTravelOptions
+            div []
+                [ displayEventMessage model.currentEvent
+                , main_ []
+                    [ section [ class "status" ]
+                        [ h2 [] [ text "Status, buddy" ]
+                        , displayDaysRemaining model.daysRemaining
+                        , displayLocation model.currentLocation
+                        , displayCashOnHand model.cashOnHand
+                        , displayDebt model.debt
+                        , displayTrenchCoat model.trenchCoat
+                        , displayLoanSharkOptions model.currentLocation
+                        ]
+                    , section [ class "prices" ]
+                        [ h2 [] [ text "Drug Prices" ]
+                        , displayCurrentPrices model.currentPrices
+                        ]
+                    , section [ class "travel" ]
+                        [ h2 [] [ text "Take a trip" ]
+                        , displayTravelOptions
+                        ]
                     ]
                 ]
 
         Finished ->
             displayScore model
+
+
+flash : String -> Html a
+flash s =
+    div [ class "flash" ] [ text s ]
 
 
 displayEventMessage : Event -> Html a
@@ -256,10 +264,10 @@ displayEventMessage event =
             div [] []
 
         PriceHike drug _ ->
-            div [] [ text (priceHikeMessage drug) ]
+            flash <| priceHikeMessage drug
 
         PriceDrop drug _ ->
-            div [] [ text (priceDropMessage drug) ]
+            flash <| priceDropMessage drug
 
 
 priceHikeMessage : Drug -> String
