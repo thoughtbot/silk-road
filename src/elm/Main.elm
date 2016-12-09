@@ -134,6 +134,9 @@ applyPricesAndEvents prices event model =
                     | trenchCoat = Inventory.addDrugs drug quantity model.trenchCoat
                 }
 
+            Mugging ->
+                { newModel | cashOnHand = Dollar.divideBy 2 newModel.cashOnHand }
+
 
 payLoanShark : Model -> Model
 payLoanShark model =
@@ -289,6 +292,9 @@ displayEventMessage event =
 
         PriceDrop drug _ ->
             flash <| priceDropMessage drug
+
+        Mugging ->
+            div [] [ text "You got mugged! The perpetrator took off with half your cash" ]
 
         FindDrug drug (DrugQuantity amount) ->
             div []

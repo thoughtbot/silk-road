@@ -20,6 +20,11 @@ subtract =
     map2 (-)
 
 
+divideBy : Int -> Dollar -> Dollar
+divideBy divisor =
+    map (flip (//) divisor)
+
+
 toInt : Dollar -> Int
 toInt (Dollar int) =
     int

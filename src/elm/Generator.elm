@@ -21,7 +21,8 @@ event =
         [ ( 50, noEvent )
         , ( 15, priceHike )
         , ( 15, priceDrop )
-        , ( 20, findDrugs )
+        , ( 10, findDrugs )
+        , ( 10, mugging )
         ]
 
 
@@ -38,6 +39,11 @@ priceHike =
 priceDrop : Generator Event
 priceDrop =
     Random.map2 PriceDrop drug dropDivisor
+
+
+mugging : Generator Event
+mugging =
+    RandomE.constant Mugging
 
 
 findDrugs : Generator Event
