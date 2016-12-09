@@ -35,6 +35,20 @@ lookupHolding drugCollection drug =
     ( drug, quantityOfDrug drugCollection drug )
 
 
+addDrugs : Drug -> DrugQuantity -> Inventory -> Inventory
+addDrugs drug quantity inventory =
+    let
+        newTotal =
+            DrugQuantity.add quantity (quantityOfDrug inventory.drugs drug)
+    in
+        { inventory | drugs = AllDict.insert drug newTotal inventory.drugs }
+
+
+removeAllDrug : Drug -> Inventory -> Inventory
+removeAllDrug drug inventory =
+    { inventory | drugs = AllDict.remove drug inventory.drugs }
+
+
 availableInventorySpace : Inventory -> DrugQuantity
 availableInventorySpace inventory =
     DrugQuantity.subtract inventory.maxHolding (slotsUsed inventory.drugs)

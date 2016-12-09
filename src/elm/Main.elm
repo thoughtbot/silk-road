@@ -66,8 +66,7 @@ emptyAllDict =
 
 model : Model
 model =
-    Model
-        Manhattan
+    Model Manhattan
         initialPrices
         (Dollar 2000)
         Inventory.empty
@@ -102,17 +101,11 @@ sellAll model drug =
             Dollar <| quantity * amount
 
         totalSalePrice =
-            multiplyThings
-                (Inventory.quantityOfDrug model.trenchCoat.drugs drug)
+            multiplyThings (Inventory.quantityOfDrug model.trenchCoat.drugs drug)
                 (Maybe.withDefault Dollar.zero <| AllDict.get drug model.currentPrices)
 
-        oldTrenchcoat =
-            model.trenchCoat
-
         newTrenchcoat =
-            { oldTrenchcoat
-                | drugs = AllDict.remove drug oldTrenchcoat.drugs
-            }
+            Inventory.removeAllDrug drug model.trenchCoat
     in
         { model | cashOnHand = Dollar.add model.cashOnHand totalSalePrice, trenchCoat = newTrenchcoat }
 
@@ -124,28 +117,22 @@ buyMax model drug =
             purchaseableDrugQuantity model drug
 
         totalPurchasePrice =
-            multiplyThings
-                purchaseableDrugQuantity_
+            multiplyThings purchaseableDrugQuantity_
                 (Maybe.withDefault Dollar.zero <| AllDict.get drug model.currentPrices)
 
         multiplyThings (DrugQuantity quantity) (Dollar amount) =
             Dollar <| quantity * amount
 
-        oldTrenchcoat =
-            model.trenchCoat
-
         newTrenchcoat =
-            { oldTrenchcoat
-                | drugs = AllDict.insert drug (DrugQuantity.add purchaseableDrugQuantity_ <| Maybe.withDefault (DrugQuantity 0) <| AllDict.get drug oldTrenchcoat.drugs) oldTrenchcoat.drugs
-            }
+            Inventory.addDrugs drug purchaseableDrugQuantity_ model.trenchCoat
     in
         { model | cashOnHand = Dollar.subtract model.cashOnHand totalPurchasePrice, trenchCoat = newTrenchcoat }
 
 
 purchaseableDrugQuantity : Model -> Drug -> DrugQuantity
 purchaseableDrugQuantity model drug =
-    Maybe.withDefault (DrugQuantity 0) <|
-        DrugQuantity.minimum
+    Maybe.withDefault (DrugQuantity 0)
+        <| DrugQuantity.minimum
             [ maxQuantityByPrice model.currentPrices model.cashOnHand drug
             , Inventory.availableInventorySpace model.trenchCoat
             ]
