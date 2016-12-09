@@ -77,6 +77,7 @@ type Msg
     | SellAll Drug
     | TravelTo Location
     | NewPrices Prices
+    | PayLoanShark
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -99,6 +100,21 @@ update msg model =
 
         NewPrices prices ->
             ( { model | currentPrices = prices }, Cmd.none )
+
+        PayLoanShark ->
+            ( payLoanShark model, Cmd.none )
+
+
+payLoanShark : Model -> Model
+payLoanShark model =
+    let
+        amountToPay =
+            Dollar.map2 min model.cashOnHand model.debt
+    in
+        { model
+            | debt = Dollar.subtract model.debt amountToPay
+            , cashOnHand = Dollar.subtract model.cashOnHand amountToPay
+        }
 
 
 generateNewPrices : Cmd Msg
@@ -154,8 +170,8 @@ calculateScore model =
 
 purchaseableDrugQuantity : Model -> Drug -> DrugQuantity
 purchaseableDrugQuantity model drug =
-    Maybe.withDefault (DrugQuantity 0)
-        <| DrugQuantity.minimum
+    Maybe.withDefault (DrugQuantity 0) <|
+        DrugQuantity.minimum
             [ maxQuantityByPrice model.currentPrices model.cashOnHand drug
             , Inventory.availableInventorySpace model.trenchCoat
             ]
@@ -178,14 +194,31 @@ view model =
             div []
                 [ displayDaysRemaining model.daysRemaining
                 , displayLocation model.currentLocation
+                , displayDebt model.debt
                 , displayCashOnHand model.cashOnHand
                 , displayTrenchCoat model.trenchCoat
                 , displayCurrentPrices model.currentPrices
                 , displayTravelOptions
+                , displayLoanSharkOptions model.currentLocation
                 ]
 
         Finished ->
             displayScore model
+
+
+displayDebt : Dollar -> Html a
+displayDebt debt =
+    text <| "Debt: " ++ displayDollars debt
+
+
+displayLoanSharkOptions : Location -> Html Msg
+displayLoanSharkOptions location =
+    if location == Bronx then
+        div []
+            [ button [ onClick PayLoanShark ] [ text "Pay Loan Shark" ]
+            ]
+    else
+        div [] []
 
 
 displayScore : Model -> Html a
