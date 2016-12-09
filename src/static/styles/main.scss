@@ -15,6 +15,13 @@ body {
 
   padding: 2em;
 
+  h1 {
+    font-size: 4em;
+    text-align: center;
+    line-height: 0.8em;
+    margin: 0 0 0.5em;
+  }
+
   button, input[type=submit] {
     background: $black;
   }

@@ -231,33 +231,46 @@ maxQuantityByPrice prices (Dollar cashOnHand) drug =
 
 view : Model -> Html Msg
 view model =
+    div []
+        [ h1 [] [ text "Drug Wars" ]
+        , displayGame model
+        ]
+
+
+displayGame : Model -> Html Msg
+displayGame model =
     case model.gameState of
         Running ->
-            div []
-                [ displayEventMessage model.currentEvent
-                , main_ []
-                    [ section [ class "status" ]
-                        [ h2 [] [ text "Status, buddy" ]
-                        , displayGameMetadata model
-                        , displayLoanSharkOptions model.currentLocation
-                        ]
-                    , section [ class "prices" ]
-                        [ h2 [] [ text "Sell" ]
-                        , displayTrenchCoat model.trenchCoat
-                        ]
-                    , section [ class "prices" ]
-                        [ h2 [] [ text "Drug Prices" ]
-                        , displayCurrentPrices model.currentPrices
-                        ]
-                    , section [ class "travel" ]
-                        [ h2 [] [ text "Take a trip" ]
-                        , displayTravelOptions
-                        ]
-                    ]
-                ]
+            displayRunningGame model
 
         Finished ->
             displayScore model
+
+
+displayRunningGame : Model -> Html Msg
+displayRunningGame model =
+    div []
+        [ displayEventMessage model.currentEvent
+        , main_ []
+            [ section [ class "status" ]
+                [ h2 [] [ text "Status, buddy" ]
+                , displayGameMetadata model
+                , displayLoanSharkOptions model.currentLocation
+                ]
+            , section [ class "prices" ]
+                [ h2 [] [ text "Sell" ]
+                , displayTrenchCoat model.trenchCoat
+                ]
+            , section [ class "prices" ]
+                [ h2 [] [ text "Drug Prices" ]
+                , displayCurrentPrices model.currentPrices
+                ]
+            , section [ class "travel" ]
+                [ h2 [] [ text "Take a trip" ]
+                , displayTravelOptions
+                ]
+            ]
+        ]
 
 
 displayGameMetadata : Model -> Html a
