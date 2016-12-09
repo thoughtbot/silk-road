@@ -1,4 +1,4 @@
-module Prices exposing (Prices, initialPrices)
+module Prices exposing (Prices, initialPrices, hike)
 
 import AllDict exposing (AllDict)
 import Drug exposing (Drug(..))
@@ -19,3 +19,8 @@ initialPrices =
     , ( Ludes, Dollar 10 )
     ]
         |> AllDict.fromList Drug.drugPosition
+
+
+hike : Drug -> Int -> Prices -> Prices
+hike drug multiplier =
+    AllDict.update drug (Maybe.map (Dollar.map ((*) multiplier)))

@@ -10,12 +10,13 @@ import Inventory exposing (GunCount(..), DrugCollection, Inventory, DrugHolding)
 import Prices exposing (Prices)
 import Random
 import Generator
+import Event exposing (Event(..))
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( model, generateNewPrices )
+        { init = ( model, generateNewPricesAndEvents )
         , view = view
         , update = update
         , subscriptions = always Sub.none
@@ -38,6 +39,7 @@ type Location
 type alias Model =
     { currentLocation : Location
     , currentPrices : Prices
+    , currentEvent : Event
     , cashOnHand : Dollar
     , trenchCoat : Inventory
     , stash : DrugCollection
@@ -62,12 +64,13 @@ model : Model
 model =
     Model Manhattan
         Prices.initialPrices
+        None
         (Dollar 2000)
         Inventory.empty
         emptyAllDict
         (Dollar 5500)
         Dollar.zero
-        3
+        31
         Running
 
 
@@ -76,7 +79,7 @@ type Msg
     | BuyMax Drug
     | SellAll Drug
     | TravelTo Location
-    | NewPrices Prices
+    | TravelArrival ( Prices, Event )
     | PayLoanShark
 
 
@@ -96,13 +99,29 @@ update msg model =
             if model.daysRemaining == 1 then
                 ( { model | gameState = Finished }, Cmd.none )
             else
-                ( arriveAtNewLocation location model, generateNewPrices )
+                ( arriveAtNewLocation location model, generateNewPricesAndEvents )
 
-        NewPrices prices ->
-            ( { model | currentPrices = prices }, Cmd.none )
+        TravelArrival ( prices, events ) ->
+            ( applyPricesAndEvents prices events model, Cmd.none )
 
         PayLoanShark ->
             ( payLoanShark model, Cmd.none )
+
+
+applyPricesAndEvents : Prices -> Event -> Model -> Model
+applyPricesAndEvents prices event model =
+    let
+        newModel =
+            { model | currentPrices = prices, currentEvent = event }
+    in
+        case event of
+            None ->
+                newModel
+
+            PriceHike drug multiplier ->
+                { newModel
+                    | currentPrices = Prices.hike drug multiplier newModel.currentPrices
+                }
 
 
 payLoanShark : Model -> Model
@@ -117,9 +136,9 @@ payLoanShark model =
         }
 
 
-generateNewPrices : Cmd Msg
-generateNewPrices =
-    Random.generate NewPrices Generator.prices
+generateNewPricesAndEvents : Cmd Msg
+generateNewPricesAndEvents =
+    Random.generate TravelArrival Generator.newPricesAndEvents
 
 
 arriveAtNewLocation : Location -> Model -> Model
@@ -179,8 +198,8 @@ calculateScore model =
 
 purchaseableDrugQuantity : Model -> Drug -> DrugQuantity
 purchaseableDrugQuantity model drug =
-    Maybe.withDefault (DrugQuantity 0) <|
-        DrugQuantity.minimum
+    Maybe.withDefault (DrugQuantity 0)
+        <| DrugQuantity.minimum
             [ maxQuantityByPrice model.currentPrices model.cashOnHand drug
             , Inventory.availableInventorySpace model.trenchCoat
             ]
@@ -206,6 +225,7 @@ view model =
                 , displayDebt model.debt
                 , displayCashOnHand model.cashOnHand
                 , displayTrenchCoat model.trenchCoat
+                , displayEventMessage model.currentEvent
                 , displayCurrentPrices model.currentPrices
                 , displayTravelOptions
                 , displayLoanSharkOptions model.currentLocation
@@ -213,6 +233,38 @@ view model =
 
         Finished ->
             displayScore model
+
+
+displayEventMessage : Event -> Html a
+displayEventMessage event =
+    case event of
+        None ->
+            div [] []
+
+        PriceHike drug _ ->
+            div [] [ text (priceHikeMessage drug) ]
+
+
+priceHikeMessage : Drug -> String
+priceHikeMessage drug =
+    case drug of
+        Cocaine ->
+            "Cops just busted the local provider. Cocaine prices have spiked"
+
+        Heroin ->
+            "Cops just busted the local provider. Heroin prices have spiked"
+
+        Acid ->
+            "Production problems have caused a shortage. Acid is super expensive"
+
+        Weed ->
+            "Bad harvest this year. Weed is super expensive"
+
+        Speed ->
+            "Local provider has retired. Speed is pricey"
+
+        Ludes ->
+            "Lotta people want Ludes these days. You're gonna have to pay..."
 
 
 displayDebt : Dollar -> Html a
