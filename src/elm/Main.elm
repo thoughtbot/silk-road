@@ -235,9 +235,12 @@ view model =
                 , main_ []
                     [ section [ class "status" ]
                         [ h2 [] [ text "Status, buddy" ]
-                        , displayTrenchCoat model.trenchCoat
                         , displayGameMetadata model
                         , displayLoanSharkOptions model.currentLocation
+                        ]
+                    , section [ class "prices" ]
+                        [ h2 [] [ text "Sell" ]
+                        , displayTrenchCoat model.trenchCoat
                         ]
                     , section [ class "prices" ]
                         [ h2 [] [ text "Drug Prices" ]
@@ -265,6 +268,8 @@ displayGameMetadata model =
         , dd [] [ text <| displayDollars model.cashOnHand ]
         , dt [] [ text "Debt" ]
         , dd [] [ text <| displayDollars model.debt ]
+        , dt [] [ text "Slots available" ]
+        , dd [] [ text <| displayDrugQuantity (Inventory.availableInventorySpace model.trenchCoat) model.trenchCoat.maxHolding ]
         ]
 
 
@@ -372,14 +377,7 @@ displayTravelOptions =
 
 displayTrenchCoat : Inventory -> Html Msg
 displayTrenchCoat inventory =
-    dl [] (displayDrugs inventory.drugs ++ displayAvailableSlots inventory)
-
-
-displayAvailableSlots : Inventory -> List (Html a)
-displayAvailableSlots inventory =
-    [ dt [] [ text "Slots available" ]
-    , dd [] [ text <| displayDrugQuantity (Inventory.availableInventorySpace inventory) inventory.maxHolding ]
-    ]
+    dl [] (displayDrugs inventory.drugs)
 
 
 displayDrugQuantity : DrugQuantity -> DrugQuantity -> String
