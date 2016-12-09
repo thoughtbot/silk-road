@@ -15,7 +15,7 @@ import Generator
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( model, Random.generate NewPrices Generator.prices )
+        { init = ( model, generateNewPrices )
         , view = view
         , update = update
         , subscriptions = always Sub.none
@@ -95,10 +95,20 @@ update msg model =
             if model.daysRemaining == 1 then
                 ( { model | gameState = Finished }, Cmd.none )
             else
-                ( { model | currentLocation = location, daysRemaining = model.daysRemaining - 1 }, Cmd.none )
+                ( arriveAtNewLocation location model, generateNewPrices )
 
         NewPrices prices ->
             ( { model | currentPrices = prices }, Cmd.none )
+
+
+generateNewPrices : Cmd Msg
+generateNewPrices =
+    Random.generate NewPrices Generator.prices
+
+
+arriveAtNewLocation : Location -> Model -> Model
+arriveAtNewLocation location model =
+    { model | currentLocation = location, daysRemaining = model.daysRemaining - 1 }
 
 
 sellAll : Model -> Drug -> Model
