@@ -348,7 +348,7 @@ priceDropMessage drug =
             "A new shipment has just come in from Columbia. Cocaine prices have plummeted"
 
         Heroin ->
-            "Cops just busted the local provider. Heroin prices have spiked"
+            "No one's doing heroin these days. Prices have plummetted"
 
         Acid ->
             "New production equipment has made Acid more plentiful."
