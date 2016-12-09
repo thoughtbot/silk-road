@@ -307,18 +307,16 @@ displayEventMessage event =
             flash <| priceDropMessage drug
 
         Mugging ->
-            div [] [ text "You got mugged! The perpetrator took off with half your cash" ]
+            flash <| "You got mugged! The perpetrator took off with half your cash"
 
         FindDrug drug (DrugQuantity amount) ->
-            div []
-                [ text
-                    ("You found "
-                        ++ toString amount
-                        ++ " "
-                        ++ toString drug
-                        ++ " on the ground"
-                    )
-                ]
+            flash <|
+                ("You found "
+                    ++ toString amount
+                    ++ " "
+                    ++ toString drug
+                    ++ " on the ground"
+                )
 
 
 priceHikeMessage : Drug -> String
