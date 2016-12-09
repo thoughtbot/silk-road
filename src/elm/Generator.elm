@@ -16,7 +16,11 @@ newPricesAndEvents =
 
 event : Generator Event
 event =
-    RandomE.frequency [ ( 75, noEvent ), ( 25, priceHike ) ]
+    RandomE.frequency
+        [ ( 70, noEvent )
+        , ( 15, priceHike )
+        , ( 15, priceDrop )
+        ]
 
 
 noEvent : Generator Event
@@ -27,6 +31,11 @@ noEvent =
 priceHike : Generator Event
 priceHike =
     Random.map2 PriceHike drug hikeMultiplier
+
+
+priceDrop : Generator Event
+priceDrop =
+    Random.map2 PriceDrop drug dropDivisor
 
 
 prices : Generator Prices
@@ -48,6 +57,11 @@ price drug =
 hikeMultiplier : Generator Int
 hikeMultiplier =
     Random.int 7 10
+
+
+dropDivisor : Generator Int
+dropDivisor =
+    Random.int 2 5
 
 
 drug : Generator Drug

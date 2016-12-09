@@ -123,6 +123,11 @@ applyPricesAndEvents prices event model =
                     | currentPrices = Prices.hike drug multiplier newModel.currentPrices
                 }
 
+            PriceDrop drug divisor ->
+                { newModel
+                    | currentPrices = Prices.drop drug divisor newModel.currentPrices
+                }
+
 
 payLoanShark : Model -> Model
 payLoanShark model =
@@ -244,6 +249,9 @@ displayEventMessage event =
         PriceHike drug _ ->
             div [] [ text (priceHikeMessage drug) ]
 
+        PriceDrop drug _ ->
+            div [] [ text (priceDropMessage drug) ]
+
 
 priceHikeMessage : Drug -> String
 priceHikeMessage drug =
@@ -265,6 +273,28 @@ priceHikeMessage drug =
 
         Ludes ->
             "Lotta people want Ludes these days. You're gonna have to pay..."
+
+
+priceDropMessage : Drug -> String
+priceDropMessage drug =
+    case drug of
+        Cocaine ->
+            "A new shipment has just come in from Columbia. Cocaine prices have plummeted"
+
+        Heroin ->
+            "Cops just busted the local provider. Heroin prices have spiked"
+
+        Acid ->
+            "New production equipment has made Acid more plentiful."
+
+        Weed ->
+            "Bumper crop this year. The bottom has fallen out of weed prices"
+
+        Speed ->
+            "Someone just dumped speed on the market. Prices are low."
+
+        Ludes ->
+            "Someone just hit up the local phramacy. CHEAP LUDES!!!"
 
 
 displayDebt : Dollar -> Html a

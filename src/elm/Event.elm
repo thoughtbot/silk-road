@@ -6,3 +6,4 @@ import Drug exposing (Drug)
 type Event
     = None
     | PriceHike Drug Int
+    | PriceDrop Drug Int
