@@ -33,10 +33,13 @@ lookupHolding drugCollection drug =
 addDrugs : Drug -> DrugQuantity -> Inventory -> Inventory
 addDrugs drug quantity inventory =
     let
-        newTotal =
+        quantityToAdd =
             DrugQuantity.map2 min
-                (DrugQuantity.add quantity (quantityOfDrug inventory.drugs drug))
+                quantity
                 (availableInventorySpace inventory)
+
+        newTotal =
+            DrugQuantity.add quantityToAdd (quantityOfDrug inventory.drugs drug)
     in
         { inventory | drugs = AllDict.insert drug newTotal inventory.drugs }
 
