@@ -30,6 +30,10 @@ body {
     display: flex;
     flex-wrap: no-wrap;
 
+    @media (max-width: 600px) {
+      flex-direction: column;
+    }
+
     & > section {
       flex-grow: 1;
       width: 33%;
