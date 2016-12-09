@@ -56,6 +56,7 @@ type alias Model =
     , stash : DrugCollection
     , debt : Dollar
     , bankAccountBalance : Dollar
+    , daysRemaining : Int
     }
 
 
@@ -73,6 +74,7 @@ model =
         emptyAllDict
         (Dollar 5500)
         Dollar.zero
+        31
 
 
 type Msg
@@ -95,7 +97,7 @@ update msg model =
             ( sellAll model drug, Cmd.none )
 
         TravelTo location ->
-            ( { model | currentLocation = location }, Cmd.none )
+            ( { model | currentLocation = location, daysRemaining = model.daysRemaining - 1 }, Cmd.none )
 
 
 sellAll : Model -> Drug -> Model
@@ -155,12 +157,18 @@ maxQuantityByPrice prices (Dollar cashOnHand) drug =
 view : Model -> Html Msg
 view model =
     div []
-        [ displayLocation model.currentLocation
+        [ displayDaysRemaining model.daysRemaining
+        , displayLocation model.currentLocation
         , displayCashOnHand model.cashOnHand
         , displayTrenchCoat model.trenchCoat
         , displayCurrentPrices model.currentPrices
         , displayTravelOptions
         ]
+
+
+displayDaysRemaining : Int -> Html Msg
+displayDaysRemaining count =
+    text <| "Days remaining: " ++ (toString count)
 
 
 displayTravelOptions : Html Msg
