@@ -34,7 +34,9 @@ addDrugs : Drug -> DrugQuantity -> Inventory -> Inventory
 addDrugs drug quantity inventory =
     let
         newTotal =
-            DrugQuantity.add quantity (quantityOfDrug inventory.drugs drug)
+            DrugQuantity.map2 min
+                (DrugQuantity.add quantity (quantityOfDrug inventory.drugs drug))
+                (availableInventorySpace inventory)
     in
         { inventory | drugs = AllDict.insert drug newTotal inventory.drugs }
 

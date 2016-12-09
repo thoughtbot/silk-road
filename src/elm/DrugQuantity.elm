@@ -1,4 +1,4 @@
-module DrugQuantity exposing (DrugQuantity(..), add, subtract, minimum)
+module DrugQuantity exposing (DrugQuantity(..), add, subtract, minimum, map2)
 
 
 type DrugQuantity
