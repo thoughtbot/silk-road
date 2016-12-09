@@ -57,7 +57,13 @@ type alias Model =
     , debt : Dollar
     , bankAccountBalance : Dollar
     , daysRemaining : Int
+    , gameState : GameState
     }
+
+
+type GameState
+    = Running
+    | Finished
 
 
 emptyAllDict : AllDict Drug b Int
@@ -75,6 +81,7 @@ model =
         (Dollar 5500)
         Dollar.zero
         31
+        Running
 
 
 type Msg
@@ -97,7 +104,10 @@ update msg model =
             ( sellAll model drug, Cmd.none )
 
         TravelTo location ->
-            ( { model | currentLocation = location, daysRemaining = model.daysRemaining - 1 }, Cmd.none )
+            if model.daysRemaining == 1 then
+                ( { model | gameState = Finished }, Cmd.none )
+            else
+                ( { model | currentLocation = location, daysRemaining = model.daysRemaining - 1 }, Cmd.none )
 
 
 sellAll : Model -> Drug -> Model
@@ -156,14 +166,19 @@ maxQuantityByPrice prices (Dollar cashOnHand) drug =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ displayDaysRemaining model.daysRemaining
-        , displayLocation model.currentLocation
-        , displayCashOnHand model.cashOnHand
-        , displayTrenchCoat model.trenchCoat
-        , displayCurrentPrices model.currentPrices
-        , displayTravelOptions
-        ]
+    case model.gameState of
+        Running ->
+            div []
+                [ displayDaysRemaining model.daysRemaining
+                , displayLocation model.currentLocation
+                , displayCashOnHand model.cashOnHand
+                , displayTrenchCoat model.trenchCoat
+                , displayCurrentPrices model.currentPrices
+                , displayTravelOptions
+                ]
+
+        Finished ->
+            text "Game over, yo"
 
 
 displayDaysRemaining : Int -> Html Msg
