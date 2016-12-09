@@ -1,4 +1,4 @@
-module Dollar exposing (Dollar(..), add, subtract, zero, toInt)
+module Dollar exposing (Dollar(..), add, subtract, zero, toInt, map2)
 
 
 type Dollar

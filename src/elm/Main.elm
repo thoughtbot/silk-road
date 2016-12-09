@@ -7,36 +7,23 @@ import Dollar exposing (Dollar(..))
 import Drug exposing (Drug(..))
 import DrugQuantity exposing (DrugQuantity(..))
 import Inventory exposing (GunCount(..), DrugCollection, Inventory, DrugHolding)
+import Prices exposing (Prices)
+import Random
+import Generator
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( model, Cmd.none )
+        { init = ( model, Random.generate NewPrices Generator.prices )
         , view = view
         , update = update
         , subscriptions = always Sub.none
         }
 
 
-initialPrices : Prices
-initialPrices =
-    [ ( Cocaine, Dollar 15000 )
-    , ( Heroin, Dollar 5000 )
-    , ( Acid, Dollar 1000 )
-    , ( Weed, Dollar 300 )
-    , ( Speed, Dollar 70 )
-    , ( Ludes, Dollar 10 )
-    ]
-        |> AllDict.fromList Drug.drugPosition
-
-
 
 -- MODEL
-
-
-type alias Prices =
-    AllDict Drug Dollar Int
 
 
 type Location
@@ -74,7 +61,7 @@ emptyAllDict =
 model : Model
 model =
     Model Manhattan
-        initialPrices
+        Prices.initialPrices
         (Dollar 2000)
         Inventory.empty
         emptyAllDict
@@ -89,6 +76,7 @@ type Msg
     | BuyMax Drug
     | SellAll Drug
     | TravelTo Location
+    | NewPrices Prices
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -108,6 +96,9 @@ update msg model =
                 ( { model | gameState = Finished }, Cmd.none )
             else
                 ( { model | currentLocation = location, daysRemaining = model.daysRemaining - 1 }, Cmd.none )
+
+        NewPrices prices ->
+            ( { model | currentPrices = prices }, Cmd.none )
 
 
 sellAll : Model -> Drug -> Model
@@ -153,8 +144,8 @@ calculateScore model =
 
 purchaseableDrugQuantity : Model -> Drug -> DrugQuantity
 purchaseableDrugQuantity model drug =
-    Maybe.withDefault (DrugQuantity 0) <|
-        DrugQuantity.minimum
+    Maybe.withDefault (DrugQuantity 0)
+        <| DrugQuantity.minimum
             [ maxQuantityByPrice model.currentPrices model.cashOnHand drug
             , Inventory.availableInventorySpace model.trenchCoat
             ]
