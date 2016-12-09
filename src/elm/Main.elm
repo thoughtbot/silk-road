@@ -124,7 +124,16 @@ generateNewPrices =
 
 arriveAtNewLocation : Location -> Model -> Model
 arriveAtNewLocation location model =
-    { model | currentLocation = location, daysRemaining = model.daysRemaining - 1 }
+    { model
+        | currentLocation = location
+        , daysRemaining = model.daysRemaining - 1
+        , debt = calculateInterest model.debt
+    }
+
+
+calculateInterest : Dollar -> Dollar
+calculateInterest =
+    Dollar.map (toFloat >> ((*) 1.1) >> truncate)
 
 
 sellAll : Model -> Drug -> Model

@@ -1,4 +1,4 @@
-module Dollar exposing (Dollar(..), add, subtract, zero, toInt, map2)
+module Dollar exposing (..)
 
 
 type Dollar
@@ -23,6 +23,11 @@ subtract =
 toInt : Dollar -> Int
 toInt (Dollar int) =
     int
+
+
+map : (Int -> Int) -> Dollar -> Dollar
+map f (Dollar a) =
+    Dollar <| f a
 
 
 map2 : (Int -> Int -> Int) -> Dollar -> Dollar -> Dollar
