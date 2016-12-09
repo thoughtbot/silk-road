@@ -5,10 +5,6 @@ import Drug exposing (Drug(..))
 import DrugQuantity exposing (DrugQuantity(..))
 
 
-type GunCount
-    = GunCount Int
-
-
 type alias DrugCollection =
     AllDict Drug DrugQuantity Int
 
@@ -20,7 +16,6 @@ type alias DrugHolding =
 type alias Inventory =
     { drugs : DrugCollection
     , maxHolding : DrugQuantity
-    , guns : GunCount
     }
 
 
@@ -66,4 +61,4 @@ emptyAllDict =
 
 empty : Inventory
 empty =
-    (Inventory emptyAllDict (DrugQuantity 100) (GunCount 0))
+    (Inventory emptyAllDict (DrugQuantity 100))

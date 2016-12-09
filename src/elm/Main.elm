@@ -7,7 +7,7 @@ import Html.Events exposing (onClick)
 import Dollar exposing (Dollar(..))
 import Drug exposing (Drug(..))
 import DrugQuantity exposing (DrugQuantity(..))
-import Inventory exposing (GunCount(..), DrugCollection, Inventory, DrugHolding)
+import Inventory exposing (DrugCollection, Inventory, DrugHolding)
 import Prices exposing (Prices)
 import Random
 import Generator
@@ -360,11 +360,7 @@ displayCashOnHand dollar =
 
 displayTrenchCoat : Inventory -> Html Msg
 displayTrenchCoat inventory =
-    dl []
-        (displayGun inventory.guns
-            ++ displayAvailableSlots inventory
-            ++ displayDrugs inventory.drugs
-        )
+    dl [] (displayAvailableSlots inventory ++ displayDrugs inventory.drugs)
 
 
 displayAvailableSlots : Inventory -> List (Html a)
@@ -377,13 +373,6 @@ displayAvailableSlots inventory =
 displayDrugQuantity : DrugQuantity -> DrugQuantity -> String
 displayDrugQuantity (DrugQuantity available) (DrugQuantity maxHolding) =
     (toString available) ++ "/" ++ (toString maxHolding)
-
-
-displayGun : GunCount -> List (Html a)
-displayGun (GunCount guns) =
-    [ dt [] [ text "Guns" ]
-    , dd [] [ text <| toString guns ]
-    ]
 
 
 displayDrugs : DrugCollection -> List (Html Msg)
