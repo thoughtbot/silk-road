@@ -80,7 +80,7 @@ model =
         emptyAllDict
         (Dollar 5500)
         Dollar.zero
-        31
+        3
         Running
 
 
@@ -145,6 +145,12 @@ buyMax model drug =
         { model | cashOnHand = Dollar.subtract model.cashOnHand totalPurchasePrice, trenchCoat = newTrenchcoat }
 
 
+calculateScore : Model -> Int
+calculateScore model =
+    Dollar.subtract model.cashOnHand model.debt
+        |> Dollar.toInt
+
+
 purchaseableDrugQuantity : Model -> Drug -> DrugQuantity
 purchaseableDrugQuantity model drug =
     Maybe.withDefault (DrugQuantity 0) <|
@@ -178,7 +184,14 @@ view model =
                 ]
 
         Finished ->
-            text "Game over, yo"
+            displayScore model
+
+
+displayScore : Model -> Html a
+displayScore model =
+    div []
+        [ text <| "Your score: " ++ (toString <| calculateScore model)
+        ]
 
 
 displayDaysRemaining : Int -> Html Msg
