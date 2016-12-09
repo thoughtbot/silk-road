@@ -129,6 +129,11 @@ applyPricesAndEvents prices event model =
                     | currentPrices = Prices.drop drug divisor newModel.currentPrices
                 }
 
+            FindDrug drug quantity ->
+                { newModel
+                    | trenchCoat = Inventory.addDrugs drug quantity model.trenchCoat
+                }
+
 
 payLoanShark : Model -> Model
 payLoanShark model =
@@ -268,6 +273,17 @@ displayEventMessage event =
 
         PriceDrop drug _ ->
             flash <| priceDropMessage drug
+
+        FindDrug drug (DrugQuantity amount) ->
+            div []
+                [ text
+                    ("You found "
+                        ++ toString amount
+                        ++ " "
+                        ++ toString drug
+                        ++ " on the ground"
+                    )
+                ]
 
 
 priceHikeMessage : Drug -> String

@@ -7,6 +7,7 @@ import Dollar exposing (Dollar(..))
 import Prices exposing (Prices)
 import Event exposing (Event(..))
 import AllDict
+import DrugQuantity exposing (DrugQuantity(..))
 
 
 newPricesAndEvents : Generator ( Prices, Event )
@@ -17,9 +18,10 @@ newPricesAndEvents =
 event : Generator Event
 event =
     RandomE.frequency
-        [ ( 70, noEvent )
+        [ ( 50, noEvent )
         , ( 15, priceHike )
         , ( 15, priceDrop )
+        , ( 20, findDrugs )
         ]
 
 
@@ -36,6 +38,11 @@ priceHike =
 priceDrop : Generator Event
 priceDrop =
     Random.map2 PriceDrop drug dropDivisor
+
+
+findDrugs : Generator Event
+findDrugs =
+    Random.map2 FindDrug drug quantityDrugsFound
 
 
 prices : Generator Prices
@@ -68,6 +75,12 @@ drug : Generator Drug
 drug =
     RandomE.sample Drug.all
         |> Random.map (Maybe.withDefault Ludes)
+
+
+quantityDrugsFound : Generator DrugQuantity
+quantityDrugsFound =
+    Random.int 2 9
+        |> Random.map DrugQuantity
 
 
 dollar : Drug -> Generator Dollar
