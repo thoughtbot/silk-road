@@ -137,6 +137,11 @@ applyPricesAndEvents prices event model =
             Mugging ->
                 { newModel | cashOnHand = Dollar.divideBy 2 newModel.cashOnHand }
 
+            DropDrug drug divisor ->
+                { newModel
+                    | trenchCoat = Inventory.drop drug divisor model.trenchCoat
+                }
+
 
 payLoanShark : Model -> Model
 payLoanShark model =
@@ -317,6 +322,9 @@ displayEventMessage event =
                     ++ toString drug
                     ++ " on the ground"
                 )
+
+        DropDrug drug _ ->
+            flash <| "Oh no, you dropped a bunch of " ++ toString drug ++ ", bud. Bummer"
 
 
 priceHikeMessage : Drug -> String

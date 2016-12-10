@@ -1,4 +1,4 @@
-module DrugQuantity exposing (DrugQuantity(..), add, subtract, minimum, map2)
+module DrugQuantity exposing (DrugQuantity(..), add, subtract, minimum, map, map2)
 
 
 type DrugQuantity
@@ -20,6 +20,11 @@ add =
 subtract : DrugQuantity -> DrugQuantity -> DrugQuantity
 subtract =
     map2 (-)
+
+
+map : (Int -> Int) -> DrugQuantity -> DrugQuantity
+map f (DrugQuantity a) =
+    DrugQuantity <| f a
 
 
 map2 : (Int -> Int -> Int) -> DrugQuantity -> DrugQuantity -> DrugQuantity

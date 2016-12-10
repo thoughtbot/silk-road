@@ -22,7 +22,8 @@ event =
         , ( 15, priceHike )
         , ( 15, priceDrop )
         , ( 10, findDrugs )
-        , ( 10, mugging )
+        , ( 4, dropDrugs )
+        , ( 6, mugging )
         ]
 
 
@@ -49,6 +50,11 @@ mugging =
 findDrugs : Generator Event
 findDrugs =
     Random.map2 FindDrug drug quantityDrugsFound
+
+
+dropDrugs : Generator Event
+dropDrugs =
+    Random.map2 DropDrug drug dropDivisor
 
 
 prices : Generator Prices

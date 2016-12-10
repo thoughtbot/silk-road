@@ -44,6 +44,11 @@ addDrugs drug quantity inventory =
         { inventory | drugs = AllDict.insert drug newTotal inventory.drugs }
 
 
+drop : Drug -> Int -> Inventory -> Inventory
+drop drug divisor inventory =
+    { inventory | drugs = AllDict.update drug (Maybe.map (DrugQuantity.map (((flip (//)) divisor)))) inventory.drugs }
+
+
 removeAllDrug : Drug -> Inventory -> Inventory
 removeAllDrug drug inventory =
     { inventory | drugs = AllDict.remove drug inventory.drugs }

@@ -10,3 +10,4 @@ type Event
     | PriceDrop Drug Int
     | FindDrug Drug DrugQuantity
     | Mugging
+    | DropDrug Drug Int
