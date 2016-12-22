@@ -2,12 +2,12 @@ module Generator exposing (prices, newPricesAndEvents)
 
 import Random exposing (Generator)
 import Random.Extra as RandomE
-import Drug exposing (Drug(..))
+import Item exposing (Item(..))
 import Dollar exposing (Dollar(..))
 import Prices exposing (Prices)
 import Event exposing (Event(..))
 import AllDict
-import DrugQuantity exposing (DrugQuantity(..))
+import ItemQuantity exposing (ItemQuantity(..))
 
 
 newPricesAndEvents : Generator ( Prices, Event )
@@ -21,8 +21,8 @@ event =
         [ ( 50, noEvent )
         , ( 15, priceHike )
         , ( 15, priceDrop )
-        , ( 10, findDrugs )
-        , ( 4, dropDrugs )
+        , ( 10, findItems )
+        , ( 4, dropItems )
         , ( 6, mugging )
         ]
 
@@ -34,12 +34,12 @@ noEvent =
 
 priceHike : Generator Event
 priceHike =
-    Random.map2 PriceHike drug hikeMultiplier
+    Random.map2 PriceHike item hikeMultiplier
 
 
 priceDrop : Generator Event
 priceDrop =
-    Random.map2 PriceDrop drug dropDivisor
+    Random.map2 PriceDrop item dropDivisor
 
 
 mugging : Generator Event
@@ -47,30 +47,30 @@ mugging =
     RandomE.constant Mugging
 
 
-findDrugs : Generator Event
-findDrugs =
-    Random.map2 FindDrug drug quantityDrugsFound
+findItems : Generator Event
+findItems =
+    Random.map2 FindItem item quantityItemsFound
 
 
-dropDrugs : Generator Event
-dropDrugs =
-    Random.map2 DropDrug drug dropDivisor
+dropItems : Generator Event
+dropItems =
+    Random.map2 DropItem item dropDivisor
 
 
 prices : Generator Prices
 prices =
-    Random.map (AllDict.fromList Drug.drugPosition) priceList
+    Random.map (AllDict.fromList Item.position) priceList
 
 
-priceList : Generator (List ( Drug, Dollar ))
+priceList : Generator (List ( Item, Dollar ))
 priceList =
-    List.map price Drug.all
+    List.map price Item.all
         |> RandomE.combine
 
 
-price : Drug -> Generator ( Drug, Dollar )
-price drug =
-    Random.map ((,) drug) (dollar drug)
+price : Item -> Generator ( Item, Dollar )
+price item =
+    Random.map ((,) item) (dollar item)
 
 
 hikeMultiplier : Generator Int
@@ -83,25 +83,25 @@ dropDivisor =
     Random.int 2 5
 
 
-drug : Generator Drug
-drug =
-    RandomE.sample Drug.all
+item : Generator Item
+item =
+    RandomE.sample Item.all
         |> Random.map (Maybe.withDefault Ludes)
 
 
-quantityDrugsFound : Generator DrugQuantity
-quantityDrugsFound =
+quantityItemsFound : Generator ItemQuantity
+quantityItemsFound =
     Random.int 2 9
-        |> Random.map DrugQuantity
+        |> Random.map ItemQuantity
 
 
-dollar : Drug -> Generator Dollar
-dollar drug =
+dollar : Item -> Generator Dollar
+dollar item =
     let
         (Dollar max) =
-            Drug.maxPrice drug
+            Item.maxPrice item
 
         (Dollar min) =
-            Drug.minPrice drug
+            Item.minPrice item
     in
         Random.int min max |> Random.map Dollar

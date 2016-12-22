@@ -1,74 +1,74 @@
 module Inventory exposing (..)
 
 import AllDict exposing (AllDict)
-import Drug exposing (Drug(..))
-import DrugQuantity exposing (DrugQuantity(..))
+import Item exposing (Item(..))
+import ItemQuantity exposing (ItemQuantity(..))
 
 
-type alias DrugCollection =
-    AllDict Drug DrugQuantity Int
+type alias ItemCollection =
+    AllDict Item ItemQuantity Int
 
 
-type alias DrugHolding =
-    ( Drug, DrugQuantity )
+type alias ItemHolding =
+    ( Item, ItemQuantity )
 
 
 type alias Inventory =
-    { drugs : DrugCollection
-    , maxHolding : DrugQuantity
+    { items : ItemCollection
+    , maxHolding : ItemQuantity
     }
 
 
-quantityOfDrug : DrugCollection -> Drug -> DrugQuantity
-quantityOfDrug drugCollection drug =
-    AllDict.get drug drugCollection
-        |> Maybe.withDefault (DrugQuantity 0)
+quantityOfItem : ItemCollection -> Item -> ItemQuantity
+quantityOfItem itemCollection item =
+    AllDict.get item itemCollection
+        |> Maybe.withDefault (ItemQuantity 0)
 
 
-lookupHolding : DrugCollection -> Drug -> DrugHolding
-lookupHolding drugCollection drug =
-    ( drug, quantityOfDrug drugCollection drug )
+lookupHolding : ItemCollection -> Item -> ItemHolding
+lookupHolding itemCollection item =
+    ( item, quantityOfItem itemCollection item )
 
 
-addDrugs : Drug -> DrugQuantity -> Inventory -> Inventory
-addDrugs drug quantity inventory =
+addItems : Item -> ItemQuantity -> Inventory -> Inventory
+addItems item quantity inventory =
     let
         quantityToAdd =
-            DrugQuantity.map2 min
+            ItemQuantity.map2 min
                 quantity
                 (availableInventorySpace inventory)
 
         newTotal =
-            DrugQuantity.add quantityToAdd (quantityOfDrug inventory.drugs drug)
+            ItemQuantity.add quantityToAdd (quantityOfItem inventory.items item)
     in
-        { inventory | drugs = AllDict.insert drug newTotal inventory.drugs }
+        { inventory | items = AllDict.insert item newTotal inventory.items }
 
 
-drop : Drug -> Int -> Inventory -> Inventory
-drop drug divisor inventory =
-    { inventory | drugs = AllDict.update drug (Maybe.map (DrugQuantity.map (((flip (//)) divisor)))) inventory.drugs }
+drop : Item -> Int -> Inventory -> Inventory
+drop item divisor inventory =
+    { inventory | items = AllDict.update item (Maybe.map (ItemQuantity.map (((flip (//)) divisor)))) inventory.items }
 
 
-removeAllDrug : Drug -> Inventory -> Inventory
-removeAllDrug drug inventory =
-    { inventory | drugs = AllDict.remove drug inventory.drugs }
+removeAllItem : Item -> Inventory -> Inventory
+removeAllItem item inventory =
+    { inventory | items = AllDict.remove item inventory.items }
 
 
-availableInventorySpace : Inventory -> DrugQuantity
+availableInventorySpace : Inventory -> ItemQuantity
 availableInventorySpace inventory =
-    DrugQuantity.subtract inventory.maxHolding (slotsUsed inventory.drugs)
+    ItemQuantity.subtract inventory.maxHolding (slotsUsed inventory.items)
 
 
-slotsUsed : DrugCollection -> DrugQuantity
+slotsUsed : ItemCollection -> ItemQuantity
 slotsUsed =
-    DrugQuantity << AllDict.foldl (\_ (DrugQuantity count) acc -> acc + count) 0
+    ItemQuantity << AllDict.foldl (\_ (ItemQuantity count) acc -> acc + count) 0
 
 
-emptyAllDict : AllDict Drug b Int
+emptyAllDict : AllDict Item b Int
 emptyAllDict =
-    AllDict.empty Drug.drugPosition
+    AllDict.empty Item.position
 
 
 empty : Inventory
 empty =
-    (Inventory emptyAllDict (DrugQuantity 100))
+    (Inventory emptyAllDict (ItemQuantity 100))

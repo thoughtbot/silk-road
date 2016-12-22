@@ -1,10 +1,10 @@
-module Drug exposing (Drug(..), drugPosition, all, minPrice, maxPrice)
+module Item exposing (Item(..), position, all, minPrice, maxPrice)
 
 import List.Extra exposing (elemIndex)
 import Dollar exposing (Dollar(..))
 
 
-type Drug
+type Item
     = Cocaine
     | Heroin
     | Acid
@@ -13,12 +13,12 @@ type Drug
     | Ludes
 
 
-drugPosition : Drug -> Int
-drugPosition drug =
-    elemIndex drug all |> Maybe.withDefault 0
+position : Item -> Int
+position item =
+    elemIndex item all |> Maybe.withDefault 0
 
 
-all : List Drug
+all : List Item
 all =
     [ Cocaine
     , Heroin
@@ -29,9 +29,9 @@ all =
     ]
 
 
-maxPrice : Drug -> Dollar
-maxPrice drug =
-    case drug of
+maxPrice : Item -> Dollar
+maxPrice item =
+    case item of
         Cocaine ->
             Dollar 30000
 
@@ -51,9 +51,9 @@ maxPrice drug =
             Dollar 60
 
 
-minPrice : Drug -> Dollar
-minPrice drug =
-    case drug of
+minPrice : Item -> Dollar
+minPrice item =
+    case item of
         Cocaine ->
             Dollar 15000
 

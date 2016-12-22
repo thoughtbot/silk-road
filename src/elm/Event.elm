@@ -1,13 +1,13 @@
 module Event exposing (Event(..))
 
-import Drug exposing (Drug)
-import DrugQuantity exposing (DrugQuantity)
+import Item exposing (Item)
+import ItemQuantity exposing (ItemQuantity)
 
 
 type Event
     = None
-    | PriceHike Drug Int
-    | PriceDrop Drug Int
-    | FindDrug Drug DrugQuantity
+    | PriceHike Item Int
+    | PriceDrop Item Int
+    | FindItem Item ItemQuantity
     | Mugging
-    | DropDrug Drug Int
+    | DropItem Item Int

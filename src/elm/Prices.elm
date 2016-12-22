@@ -1,12 +1,12 @@
 module Prices exposing (Prices, initialPrices, hike, drop)
 
 import AllDict exposing (AllDict)
-import Drug exposing (Drug(..))
+import Item exposing (Item(..))
 import Dollar exposing (Dollar(..))
 
 
 type alias Prices =
-    AllDict Drug Dollar Int
+    AllDict Item Dollar Int
 
 
 initialPrices : Prices
@@ -18,14 +18,14 @@ initialPrices =
     , ( Speed, Dollar 70 )
     , ( Ludes, Dollar 10 )
     ]
-        |> AllDict.fromList Drug.drugPosition
+        |> AllDict.fromList Item.position
 
 
-hike : Drug -> Int -> Prices -> Prices
-hike drug multiplier =
-    AllDict.update drug (Maybe.map (Dollar.map ((*) multiplier)))
+hike : Item -> Int -> Prices -> Prices
+hike item multiplier =
+    AllDict.update item (Maybe.map (Dollar.map ((*) multiplier)))
 
 
-drop : Drug -> Int -> Prices -> Prices
-drop drug divisor =
-    AllDict.update drug (Maybe.map (Dollar.map (((flip (//)) divisor))))
+drop : Item -> Int -> Prices -> Prices
+drop item divisor =
+    AllDict.update item (Maybe.map (Dollar.map (((flip (//)) divisor))))

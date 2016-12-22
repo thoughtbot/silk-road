@@ -5,9 +5,9 @@ import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Dollar exposing (Dollar(..))
-import Drug exposing (Drug(..))
-import DrugQuantity exposing (DrugQuantity(..))
-import Inventory exposing (DrugCollection, Inventory, DrugHolding)
+import Item exposing (Item(..))
+import ItemQuantity exposing (ItemQuantity(..))
+import Inventory exposing (ItemCollection, Inventory, ItemHolding)
 import Prices exposing (Prices)
 import Random
 import Generator
@@ -43,7 +43,7 @@ type alias Model =
     , currentEvent : Event
     , cashOnHand : Dollar
     , trenchCoat : Inventory
-    , stash : DrugCollection
+    , stash : ItemCollection
     , debt : Dollar
     , bankAccountBalance : Dollar
     , daysRemaining : Int
@@ -56,9 +56,9 @@ type GameState
     | Finished
 
 
-emptyAllDict : AllDict Drug b Int
+emptyAllDict : AllDict Item b Int
 emptyAllDict =
-    AllDict.empty Drug.drugPosition
+    AllDict.empty Item.position
 
 
 model : Model
@@ -77,8 +77,8 @@ model =
 
 type Msg
     = NoOp
-    | BuyMax Drug
-    | SellAll Drug
+    | BuyMax Item
+    | SellAll Item
     | TravelTo Location
     | TravelArrival ( Prices, Event )
     | PayLoanShark
@@ -90,11 +90,11 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        BuyMax drug ->
-            ( buyMax model drug, Cmd.none )
+        BuyMax item ->
+            ( buyMax model item, Cmd.none )
 
-        SellAll drug ->
-            ( sellAll model drug, Cmd.none )
+        SellAll item ->
+            ( sellAll model item, Cmd.none )
 
         TravelTo location ->
             if model.daysRemaining == 1 then
@@ -119,27 +119,27 @@ applyPricesAndEvents prices event model =
             None ->
                 newModel
 
-            PriceHike drug multiplier ->
+            PriceHike item multiplier ->
                 { newModel
-                    | currentPrices = Prices.hike drug multiplier newModel.currentPrices
+                    | currentPrices = Prices.hike item multiplier newModel.currentPrices
                 }
 
-            PriceDrop drug divisor ->
+            PriceDrop item divisor ->
                 { newModel
-                    | currentPrices = Prices.drop drug divisor newModel.currentPrices
+                    | currentPrices = Prices.drop item divisor newModel.currentPrices
                 }
 
-            FindDrug drug quantity ->
+            FindItem item quantity ->
                 { newModel
-                    | trenchCoat = Inventory.addDrugs drug quantity model.trenchCoat
+                    | trenchCoat = Inventory.addItems item quantity model.trenchCoat
                 }
 
             Mugging ->
                 { newModel | cashOnHand = Dollar.divideBy 2 newModel.cashOnHand }
 
-            DropDrug drug divisor ->
+            DropItem item divisor ->
                 { newModel
-                    | trenchCoat = Inventory.drop drug divisor model.trenchCoat
+                    | trenchCoat = Inventory.drop item divisor model.trenchCoat
                 }
 
 
@@ -174,37 +174,37 @@ calculateInterest =
     Dollar.map (toFloat >> ((*) 1.1) >> truncate)
 
 
-sellAll : Model -> Drug -> Model
-sellAll model drug =
+sellAll : Model -> Item -> Model
+sellAll model item =
     let
-        multiplyThings (DrugQuantity quantity) (Dollar amount) =
+        multiplyThings (ItemQuantity quantity) (Dollar amount) =
             Dollar <| quantity * amount
 
         totalSalePrice =
-            multiplyThings (Inventory.quantityOfDrug model.trenchCoat.drugs drug)
-                (Maybe.withDefault Dollar.zero <| AllDict.get drug model.currentPrices)
+            multiplyThings (Inventory.quantityOfItem model.trenchCoat.items item)
+                (Maybe.withDefault Dollar.zero <| AllDict.get item model.currentPrices)
 
         newTrenchcoat =
-            Inventory.removeAllDrug drug model.trenchCoat
+            Inventory.removeAllItem item model.trenchCoat
     in
         { model | cashOnHand = Dollar.add model.cashOnHand totalSalePrice, trenchCoat = newTrenchcoat }
 
 
-buyMax : Model -> Drug -> Model
-buyMax model drug =
+buyMax : Model -> Item -> Model
+buyMax model item =
     let
-        purchaseableDrugQuantity_ =
-            purchaseableDrugQuantity model drug
+        purchaseableItemQuantity_ =
+            purchaseableItemQuantity model item
 
         totalPurchasePrice =
-            multiplyThings purchaseableDrugQuantity_
-                (Maybe.withDefault Dollar.zero <| AllDict.get drug model.currentPrices)
+            multiplyThings purchaseableItemQuantity_
+                (Maybe.withDefault Dollar.zero <| AllDict.get item model.currentPrices)
 
-        multiplyThings (DrugQuantity quantity) (Dollar amount) =
+        multiplyThings (ItemQuantity quantity) (Dollar amount) =
             Dollar <| quantity * amount
 
         newTrenchcoat =
-            Inventory.addDrugs drug purchaseableDrugQuantity_ model.trenchCoat
+            Inventory.addItems item purchaseableItemQuantity_ model.trenchCoat
     in
         { model | cashOnHand = Dollar.subtract model.cashOnHand totalPurchasePrice, trenchCoat = newTrenchcoat }
 
@@ -215,23 +215,23 @@ calculateScore model =
         |> Dollar.toInt
 
 
-purchaseableDrugQuantity : Model -> Drug -> DrugQuantity
-purchaseableDrugQuantity model drug =
-    Maybe.withDefault (DrugQuantity 0) <|
-        DrugQuantity.minimum
-            [ maxQuantityByPrice model.currentPrices model.cashOnHand drug
+purchaseableItemQuantity : Model -> Item -> ItemQuantity
+purchaseableItemQuantity model item =
+    Maybe.withDefault (ItemQuantity 0) <|
+        ItemQuantity.minimum
+            [ maxQuantityByPrice model.currentPrices model.cashOnHand item
             , Inventory.availableInventorySpace model.trenchCoat
             ]
 
 
-maxQuantityByPrice : Prices -> Dollar -> Drug -> DrugQuantity
-maxQuantityByPrice prices (Dollar cashOnHand) drug =
-    case AllDict.get drug prices of
-        Just (Dollar foundDrugPrice) ->
-            DrugQuantity <| cashOnHand // foundDrugPrice
+maxQuantityByPrice : Prices -> Dollar -> Item -> ItemQuantity
+maxQuantityByPrice prices (Dollar cashOnHand) item =
+    case AllDict.get item prices of
+        Just (Dollar foundItemPrice) ->
+            ItemQuantity <| cashOnHand // foundItemPrice
 
         Nothing ->
-            DrugQuantity 0
+            ItemQuantity 0
 
 
 view : Model -> Html Msg
@@ -290,7 +290,7 @@ displayGameMetadata model =
         , dt [] [ text "Debt" ]
         , dd [] [ text <| displayDollars model.debt ]
         , dt [] [ text "Slots available" ]
-        , dd [] [ text <| displayDrugQuantity (Inventory.availableInventorySpace model.trenchCoat) model.trenchCoat.maxHolding ]
+        , dd [] [ text <| displayItemQuantity (Inventory.availableInventorySpace model.trenchCoat) model.trenchCoat.maxHolding ]
         ]
 
 
@@ -305,31 +305,31 @@ displayEventMessage event =
         None ->
             div [] []
 
-        PriceHike drug _ ->
-            flash <| priceHikeMessage drug
+        PriceHike item _ ->
+            flash <| priceHikeMessage item
 
-        PriceDrop drug _ ->
-            flash <| priceDropMessage drug
+        PriceDrop item _ ->
+            flash <| priceDropMessage item
 
         Mugging ->
             flash <| "You got mugged! The perpetrator took off with half your cash"
 
-        FindDrug drug (DrugQuantity amount) ->
+        FindItem item (ItemQuantity amount) ->
             flash <|
                 ("You found "
                     ++ toString amount
                     ++ " "
-                    ++ toString drug
+                    ++ toString item
                     ++ " on the ground"
                 )
 
-        DropDrug drug _ ->
-            flash <| "Oh no, you dropped a bunch of " ++ toString drug ++ ", bud. Bummer"
+        DropItem item _ ->
+            flash <| "Oh no, you dropped a bunch of " ++ toString item ++ ", bud. Bummer"
 
 
-priceHikeMessage : Drug -> String
-priceHikeMessage drug =
-    case drug of
+priceHikeMessage : Item -> String
+priceHikeMessage item =
+    case item of
         Cocaine ->
             "Cops just busted the local provider. Cocaine prices have spiked"
 
@@ -349,9 +349,9 @@ priceHikeMessage drug =
             "Lotta people want Ludes these days. You're gonna have to pay..."
 
 
-priceDropMessage : Drug -> String
-priceDropMessage drug =
-    case drug of
+priceDropMessage : Item -> String
+priceDropMessage item =
+    case item of
         Cocaine ->
             "A new shipment has just come in from Columbia. Cocaine prices have plummeted"
 
@@ -402,24 +402,24 @@ displayTravelOptions =
 
 displayTrenchCoat : Inventory -> Html Msg
 displayTrenchCoat inventory =
-    dl [] (displayDrugs inventory.drugs)
+    dl [] (displayItems inventory.items)
 
 
-displayDrugQuantity : DrugQuantity -> DrugQuantity -> String
-displayDrugQuantity (DrugQuantity available) (DrugQuantity maxHolding) =
+displayItemQuantity : ItemQuantity -> ItemQuantity -> String
+displayItemQuantity (ItemQuantity available) (ItemQuantity maxHolding) =
     (toString available) ++ "/" ++ (toString maxHolding)
 
 
-displayDrugs : DrugCollection -> List (Html Msg)
-displayDrugs stash =
-    List.concatMap (displayDrug << Inventory.lookupHolding stash) Drug.all
+displayItems : ItemCollection -> List (Html Msg)
+displayItems stash =
+    List.concatMap (displayItem << Inventory.lookupHolding stash) Item.all
 
 
-displayDrug : DrugHolding -> List (Html Msg)
-displayDrug ( drug, DrugQuantity count ) =
-    [ dt [] [ text <| toString drug ]
+displayItem : ItemHolding -> List (Html Msg)
+displayItem ( item, ItemQuantity count ) =
+    [ dt [] [ text <| toString item ]
     , dd []
-        [ button [ onClick <| SellAll drug ] [ text "Sell all" ]
+        [ button [ onClick <| SellAll item ] [ text "Sell all" ]
         , text <| toString count
         ]
     ]
@@ -432,11 +432,11 @@ displayCurrentPrices prices =
         ]
 
 
-displayPrice : ( Drug, Dollar ) -> List (Html Msg)
-displayPrice ( drug, dollar ) =
-    [ dt [] [ text <| toString drug ]
+displayPrice : ( Item, Dollar ) -> List (Html Msg)
+displayPrice ( item, dollar ) =
+    [ dt [] [ text <| toString item ]
     , dd []
-        [ button [ onClick <| BuyMax drug ] [ text "Buy max" ]
+        [ button [ onClick <| BuyMax item ] [ text "Buy max" ]
         , text <| displayDollars dollar
         ]
     ]
