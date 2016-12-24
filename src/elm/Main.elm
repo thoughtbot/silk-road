@@ -81,7 +81,7 @@ type Msg
     | SellAll Item
     | TravelTo Location
     | TravelArrival ( Prices, Event )
-    | PayLoanShark
+    | PayLender
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -105,8 +105,8 @@ update msg model =
         TravelArrival ( prices, events ) ->
             ( applyPricesAndEvents prices events model, Cmd.none )
 
-        PayLoanShark ->
-            ( payLoanShark model, Cmd.none )
+        PayLender ->
+            ( payLender model, Cmd.none )
 
 
 applyPricesAndEvents : Prices -> Event -> Model -> Model
@@ -143,8 +143,8 @@ applyPricesAndEvents prices event model =
                 }
 
 
-payLoanShark : Model -> Model
-payLoanShark model =
+payLender : Model -> Model
+payLender model =
     let
         amountToPay =
             Currency.map2 min model.cashOnHand model.debt
@@ -260,7 +260,7 @@ displayRunningGame model =
             [ section [ class "status" ]
                 [ h2 [] [ text "Status, buddy" ]
                 , displayGameMetadata model
-                , displayLoanSharkOptions model.currentLocation
+                , displayLenderOptions model.currentLocation
                 ]
             , section [ class "prices" ]
                 [ h2 [] [ text "Sell" ]
@@ -371,11 +371,11 @@ priceDropMessage item =
             "Someone just hit up the local phramacy. CHEAP LUDES!!!"
 
 
-displayLoanSharkOptions : Location -> Html Msg
-displayLoanSharkOptions location =
+displayLenderOptions : Location -> Html Msg
+displayLenderOptions location =
     if location == Bronx then
         div []
-            [ button [ onClick PayLoanShark ] [ text "Pay Loan Shark" ]
+            [ button [ onClick PayLender ] [ text "Pay Loan Shark" ]
             ]
     else
         div [] []
