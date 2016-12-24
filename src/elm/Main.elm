@@ -42,7 +42,7 @@ type alias Model =
     , currentPrices : Prices
     , currentEvent : Event
     , cashOnHand : Currency
-    , trenchCoat : Inventory
+    , inventoryOnHand : Inventory
     , stash : ItemCollection
     , debt : Currency
     , bankAccountBalance : Currency
@@ -131,7 +131,7 @@ applyPricesAndEvents prices event model =
 
             FindItem item quantity ->
                 { newModel
-                    | trenchCoat = Inventory.addItems item quantity model.trenchCoat
+                    | inventoryOnHand = Inventory.addItems item quantity model.inventoryOnHand
                 }
 
             Mugging ->
@@ -139,7 +139,7 @@ applyPricesAndEvents prices event model =
 
             DropItem item divisor ->
                 { newModel
-                    | trenchCoat = Inventory.drop item divisor model.trenchCoat
+                    | inventoryOnHand = Inventory.drop item divisor model.inventoryOnHand
                 }
 
 
@@ -181,13 +181,13 @@ sellAll model item =
             Currency <| quantity * amount
 
         totalSalePrice =
-            multiplyThings (Inventory.quantityOfItem model.trenchCoat.items item)
+            multiplyThings (Inventory.quantityOfItem model.inventoryOnHand.items item)
                 (Maybe.withDefault Currency.zero <| AllDict.get item model.currentPrices)
 
-        newTrenchcoat =
-            Inventory.removeAllItem item model.trenchCoat
+        newInventoryOnHand =
+            Inventory.removeAllItem item model.inventoryOnHand
     in
-        { model | cashOnHand = Currency.add model.cashOnHand totalSalePrice, trenchCoat = newTrenchcoat }
+        { model | cashOnHand = Currency.add model.cashOnHand totalSalePrice, inventoryOnHand = newInventoryOnHand }
 
 
 buyMax : Model -> Item -> Model
@@ -203,10 +203,10 @@ buyMax model item =
         multiplyThings (ItemQuantity quantity) (Currency amount) =
             Currency <| quantity * amount
 
-        newTrenchcoat =
-            Inventory.addItems item purchaseableItemQuantity_ model.trenchCoat
+        newInventoryOnHand =
+            Inventory.addItems item purchaseableItemQuantity_ model.inventoryOnHand
     in
-        { model | cashOnHand = Currency.subtract model.cashOnHand totalPurchasePrice, trenchCoat = newTrenchcoat }
+        { model | cashOnHand = Currency.subtract model.cashOnHand totalPurchasePrice, inventoryOnHand = newInventoryOnHand }
 
 
 calculateScore : Model -> Int
@@ -220,7 +220,7 @@ purchaseableItemQuantity model item =
     Maybe.withDefault (ItemQuantity 0) <|
         ItemQuantity.minimum
             [ maxQuantityByPrice model.currentPrices model.cashOnHand item
-            , Inventory.availableInventorySpace model.trenchCoat
+            , Inventory.availableInventorySpace model.inventoryOnHand
             ]
 
 
@@ -264,7 +264,7 @@ displayRunningGame model =
                 ]
             , section [ class "prices" ]
                 [ h2 [] [ text "Sell" ]
-                , displayTrenchCoat model.trenchCoat
+                , displayInventoryOnHand model.inventoryOnHand
                 ]
             , section [ class "prices" ]
                 [ h2 [] [ text "Drug Prices" ]
@@ -290,7 +290,7 @@ displayGameMetadata model =
         , dt [] [ text "Debt" ]
         , dd [] [ text <| displayCurrency model.debt ]
         , dt [] [ text "Slots available" ]
-        , dd [] [ text <| displayItemQuantity (Inventory.availableInventorySpace model.trenchCoat) model.trenchCoat.maxHolding ]
+        , dd [] [ text <| displayItemQuantity (Inventory.availableInventorySpace model.inventoryOnHand) model.inventoryOnHand.maxHolding ]
         ]
 
 
@@ -400,8 +400,8 @@ displayTravelOptions =
         ]
 
 
-displayTrenchCoat : Inventory -> Html Msg
-displayTrenchCoat inventory =
+displayInventoryOnHand : Inventory -> Html Msg
+displayInventoryOnHand inventory =
     dl [] (displayItems inventory.items)
 
 
