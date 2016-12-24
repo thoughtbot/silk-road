@@ -5,12 +5,12 @@ import Currency exposing (Currency(..))
 
 
 type Item
-    = Cocaine
-    | Heroin
-    | Acid
-    | Weed
-    | Speed
-    | Ludes
+    = Item1
+    | Item2
+    | Item3
+    | Item4
+    | Item5
+    | Item6
 
 
 position : Item -> Int
@@ -20,54 +20,54 @@ position item =
 
 all : List Item
 all =
-    [ Cocaine
-    , Heroin
-    , Acid
-    , Weed
-    , Speed
-    , Ludes
+    [ Item1
+    , Item2
+    , Item3
+    , Item4
+    , Item5
+    , Item6
     ]
 
 
 maxPrice : Item -> Currency
 maxPrice item =
     case item of
-        Cocaine ->
+        Item1 ->
             Currency 30000
 
-        Heroin ->
+        Item2 ->
             Currency 14000
 
-        Acid ->
+        Item3 ->
             Currency 4500
 
-        Weed ->
+        Item4 ->
             Currency 900
 
-        Speed ->
+        Item5 ->
             Currency 250
 
-        Ludes ->
+        Item6 ->
             Currency 60
 
 
 minPrice : Item -> Currency
 minPrice item =
     case item of
-        Cocaine ->
+        Item1 ->
             Currency 15000
 
-        Heroin ->
+        Item2 ->
             Currency 5000
 
-        Acid ->
+        Item3 ->
             Currency 1000
 
-        Weed ->
+        Item4 ->
             Currency 300
 
-        Speed ->
+        Item5 ->
             Currency 70
 
-        Ludes ->
+        Item6 ->
             Currency 10

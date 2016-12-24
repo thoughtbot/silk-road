@@ -319,55 +319,55 @@ displayEventMessage event =
                 ("You found "
                     ++ toString amount
                     ++ " "
-                    ++ toString item
+                    ++ itemName item
                     ++ " on the ground"
                 )
 
         DropItem item _ ->
-            flash <| "Oh no, you dropped a bunch of " ++ toString item ++ ", bud. Bummer"
+            flash <| "Oh no, you dropped a bunch of " ++ itemName item ++ ", bud. Bummer"
 
 
 priceHikeMessage : Item -> String
 priceHikeMessage item =
     case item of
-        Cocaine ->
+        Item1 ->
             "Cops just busted the local provider. Cocaine prices have spiked"
 
-        Heroin ->
+        Item2 ->
             "Cops just busted the local provider. Heroin prices have spiked"
 
-        Acid ->
+        Item3 ->
             "Production problems have caused a shortage. Acid is super expensive"
 
-        Weed ->
+        Item4 ->
             "Bad harvest this year. Weed is super expensive"
 
-        Speed ->
+        Item5 ->
             "Local provider has retired. Speed is pricey"
 
-        Ludes ->
+        Item6 ->
             "Lotta people want Ludes these days. You're gonna have to pay..."
 
 
 priceDropMessage : Item -> String
 priceDropMessage item =
     case item of
-        Cocaine ->
+        Item1 ->
             "A new shipment has just come in from Columbia. Cocaine prices have plummeted"
 
-        Heroin ->
+        Item2 ->
             "No one's doing heroin these days. Prices have plummetted"
 
-        Acid ->
+        Item3 ->
             "New production equipment has made Acid more plentiful."
 
-        Weed ->
+        Item4 ->
             "Bumper crop this year. The bottom has fallen out of weed prices"
 
-        Speed ->
+        Item5 ->
             "Someone just dumped speed on the market. Prices are low."
 
-        Ludes ->
+        Item6 ->
             "Someone just hit up the local phramacy. CHEAP LUDES!!!"
 
 
@@ -417,7 +417,7 @@ displayItems stash =
 
 displayItem : ItemHolding -> List (Html Msg)
 displayItem ( item, ItemQuantity count ) =
-    [ dt [] [ text <| toString item ]
+    [ dt [] [ text <| itemName item ]
     , dd []
         [ button [ onClick <| SellAll item ] [ text "Sell all" ]
         , text <| toString count
@@ -434,7 +434,7 @@ displayCurrentPrices prices =
 
 displayPrice : ( Item, Currency ) -> List (Html Msg)
 displayPrice ( item, currency ) =
-    [ dt [] [ text <| toString item ]
+    [ dt [] [ text <| itemName item ]
     , dd []
         [ button [ onClick <| BuyMax item ] [ text "Buy max" ]
         , text <| displayCurrency currency
@@ -445,3 +445,25 @@ displayPrice ( item, currency ) =
 displayCurrency : Currency -> String
 displayCurrency (Currency amount) =
     "$" ++ toString amount
+
+
+itemName : Item -> String
+itemName item =
+    case item of
+        Item1 ->
+            "Cocaine"
+
+        Item2 ->
+            "Heroin"
+
+        Item3 ->
+            "Acid"
+
+        Item4 ->
+            "Weed"
+
+        Item5 ->
+            "Speed"
+
+        Item6 ->
+            "Ludes"

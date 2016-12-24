@@ -11,12 +11,12 @@ type alias Prices =
 
 initialPrices : Prices
 initialPrices =
-    [ ( Cocaine, Currency 15000 )
-    , ( Heroin, Currency 5000 )
-    , ( Acid, Currency 1000 )
-    , ( Weed, Currency 300 )
-    , ( Speed, Currency 70 )
-    , ( Ludes, Currency 10 )
+    [ ( Item1, Currency 15000 )
+    , ( Item2, Currency 5000 )
+    , ( Item3, Currency 1000 )
+    , ( Item4, Currency 300 )
+    , ( Item5, Currency 70 )
+    , ( Item6, Currency 10 )
     ]
         |> AllDict.fromList Item.position
 

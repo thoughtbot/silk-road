@@ -86,7 +86,7 @@ dropDivisor =
 item : Generator Item
 item =
     RandomE.sample Item.all
-        |> Random.map (Maybe.withDefault Ludes)
+        |> Random.map (Maybe.withDefault Item6)
 
 
 quantityItemsFound : Generator ItemQuantity
