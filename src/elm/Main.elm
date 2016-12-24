@@ -29,12 +29,17 @@ main =
 
 
 type Location
-    = Manhattan
-    | Bronx
-    | Ghetto
-    | ConeyIsland
-    | CentralPark
-    | Brooklyn
+    = Location1
+    | Location2
+    | Location3
+    | Location4
+    | Location5
+    | Location6
+
+
+allLocations : List Location
+allLocations =
+    [ Location1, Location2, Location3, Location4, Location5, Location6 ]
 
 
 type alias Model =
@@ -63,7 +68,7 @@ emptyAllDict =
 
 model : Model
 model =
-    Model Manhattan
+    Model Location1
         Prices.initialPrices
         None
         (Currency 2000)
@@ -282,7 +287,7 @@ displayGameMetadata : Model -> Html a
 displayGameMetadata model =
     dl []
         [ dt [] [ text "Current location" ]
-        , dd [] [ text <| toString model.currentLocation ]
+        , dd [] [ text <| locationName model.currentLocation ]
         , dt [] [ text "Days remaining" ]
         , dd [] [ text <| toString model.daysRemaining ]
         , dt [] [ text "Cash on hand" ]
@@ -373,7 +378,7 @@ priceDropMessage item =
 
 displayLenderOptions : Location -> Html Msg
 displayLenderOptions location =
-    if location == Bronx then
+    if location == Location1 then
         div []
             [ button [ onClick PayLender ] [ text "Pay Loan Shark" ]
             ]
@@ -388,15 +393,41 @@ displayScore model =
         ]
 
 
+locationName : Location -> String
+locationName location =
+    case location of
+        Location1 ->
+            "the Bronx"
+
+        Location2 ->
+            "Central Park"
+
+        Location3 ->
+            "Coney Island"
+
+        Location4 ->
+            "the Ghetto"
+
+        Location5 ->
+            "Brooklyn"
+
+        Location6 ->
+            "Manhattan"
+
+
 displayTravelOptions : Html Msg
 displayTravelOptions =
     ul []
-        [ li [] [ button [ onClick (TravelTo Brooklyn) ] [ text "Travel to Brooklyn" ] ]
-        , li [] [ button [ onClick (TravelTo CentralPark) ] [ text "Travel to Central Park" ] ]
-        , li [] [ button [ onClick (TravelTo ConeyIsland) ] [ text "Travel to Coney Island" ] ]
-        , li [] [ button [ onClick (TravelTo Ghetto) ] [ text "Travel to the Ghetto" ] ]
-        , li [] [ button [ onClick (TravelTo Bronx) ] [ text "Travel to the Bronx" ] ]
-        , li [] [ button [ onClick (TravelTo Manhattan) ] [ text "Travel to Manhattan" ] ]
+        (List.map travelButton allLocations)
+
+
+travelButton : Location -> Html Msg
+travelButton location =
+    li
+        []
+        [ button
+            [ onClick (TravelTo location) ]
+            [ text <| "Travel to " ++ locationName location ]
         ]
 
 
