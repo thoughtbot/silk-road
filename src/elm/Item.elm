@@ -1,7 +1,7 @@
 module Item exposing (Item(..), position, all, minPrice, maxPrice)
 
 import List.Extra exposing (elemIndex)
-import Dollar exposing (Dollar(..))
+import Currency exposing (Currency(..))
 
 
 type Item
@@ -29,45 +29,45 @@ all =
     ]
 
 
-maxPrice : Item -> Dollar
+maxPrice : Item -> Currency
 maxPrice item =
     case item of
         Cocaine ->
-            Dollar 30000
+            Currency 30000
 
         Heroin ->
-            Dollar 14000
+            Currency 14000
 
         Acid ->
-            Dollar 4500
+            Currency 4500
 
         Weed ->
-            Dollar 900
+            Currency 900
 
         Speed ->
-            Dollar 250
+            Currency 250
 
         Ludes ->
-            Dollar 60
+            Currency 60
 
 
-minPrice : Item -> Dollar
+minPrice : Item -> Currency
 minPrice item =
     case item of
         Cocaine ->
-            Dollar 15000
+            Currency 15000
 
         Heroin ->
-            Dollar 5000
+            Currency 5000
 
         Acid ->
-            Dollar 1000
+            Currency 1000
 
         Weed ->
-            Dollar 300
+            Currency 300
 
         Speed ->
-            Dollar 70
+            Currency 70
 
         Ludes ->
-            Dollar 10
+            Currency 10

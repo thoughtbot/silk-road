@@ -4,7 +4,7 @@ import AllDict exposing (AllDict)
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import Dollar exposing (Dollar(..))
+import Currency exposing (Currency(..))
 import Item exposing (Item(..))
 import ItemQuantity exposing (ItemQuantity(..))
 import Inventory exposing (ItemCollection, Inventory, ItemHolding)
@@ -41,11 +41,11 @@ type alias Model =
     { currentLocation : Location
     , currentPrices : Prices
     , currentEvent : Event
-    , cashOnHand : Dollar
+    , cashOnHand : Currency
     , trenchCoat : Inventory
     , stash : ItemCollection
-    , debt : Dollar
-    , bankAccountBalance : Dollar
+    , debt : Currency
+    , bankAccountBalance : Currency
     , daysRemaining : Int
     , gameState : GameState
     }
@@ -66,11 +66,11 @@ model =
     Model Manhattan
         Prices.initialPrices
         None
-        (Dollar 2000)
+        (Currency 2000)
         Inventory.empty
         emptyAllDict
-        (Dollar 5500)
-        Dollar.zero
+        (Currency 5500)
+        Currency.zero
         31
         Running
 
@@ -135,7 +135,7 @@ applyPricesAndEvents prices event model =
                 }
 
             Mugging ->
-                { newModel | cashOnHand = Dollar.divideBy 2 newModel.cashOnHand }
+                { newModel | cashOnHand = Currency.divideBy 2 newModel.cashOnHand }
 
             DropItem item divisor ->
                 { newModel
@@ -147,11 +147,11 @@ payLoanShark : Model -> Model
 payLoanShark model =
     let
         amountToPay =
-            Dollar.map2 min model.cashOnHand model.debt
+            Currency.map2 min model.cashOnHand model.debt
     in
         { model
-            | debt = Dollar.subtract model.debt amountToPay
-            , cashOnHand = Dollar.subtract model.cashOnHand amountToPay
+            | debt = Currency.subtract model.debt amountToPay
+            , cashOnHand = Currency.subtract model.cashOnHand amountToPay
         }
 
 
@@ -169,25 +169,25 @@ arriveAtNewLocation location model =
     }
 
 
-calculateInterest : Dollar -> Dollar
+calculateInterest : Currency -> Currency
 calculateInterest =
-    Dollar.map (toFloat >> ((*) 1.1) >> truncate)
+    Currency.map (toFloat >> ((*) 1.1) >> truncate)
 
 
 sellAll : Model -> Item -> Model
 sellAll model item =
     let
-        multiplyThings (ItemQuantity quantity) (Dollar amount) =
-            Dollar <| quantity * amount
+        multiplyThings (ItemQuantity quantity) (Currency amount) =
+            Currency <| quantity * amount
 
         totalSalePrice =
             multiplyThings (Inventory.quantityOfItem model.trenchCoat.items item)
-                (Maybe.withDefault Dollar.zero <| AllDict.get item model.currentPrices)
+                (Maybe.withDefault Currency.zero <| AllDict.get item model.currentPrices)
 
         newTrenchcoat =
             Inventory.removeAllItem item model.trenchCoat
     in
-        { model | cashOnHand = Dollar.add model.cashOnHand totalSalePrice, trenchCoat = newTrenchcoat }
+        { model | cashOnHand = Currency.add model.cashOnHand totalSalePrice, trenchCoat = newTrenchcoat }
 
 
 buyMax : Model -> Item -> Model
@@ -198,21 +198,21 @@ buyMax model item =
 
         totalPurchasePrice =
             multiplyThings purchaseableItemQuantity_
-                (Maybe.withDefault Dollar.zero <| AllDict.get item model.currentPrices)
+                (Maybe.withDefault Currency.zero <| AllDict.get item model.currentPrices)
 
-        multiplyThings (ItemQuantity quantity) (Dollar amount) =
-            Dollar <| quantity * amount
+        multiplyThings (ItemQuantity quantity) (Currency amount) =
+            Currency <| quantity * amount
 
         newTrenchcoat =
             Inventory.addItems item purchaseableItemQuantity_ model.trenchCoat
     in
-        { model | cashOnHand = Dollar.subtract model.cashOnHand totalPurchasePrice, trenchCoat = newTrenchcoat }
+        { model | cashOnHand = Currency.subtract model.cashOnHand totalPurchasePrice, trenchCoat = newTrenchcoat }
 
 
 calculateScore : Model -> Int
 calculateScore model =
-    Dollar.subtract model.cashOnHand model.debt
-        |> Dollar.toInt
+    Currency.subtract model.cashOnHand model.debt
+        |> Currency.toInt
 
 
 purchaseableItemQuantity : Model -> Item -> ItemQuantity
@@ -224,10 +224,10 @@ purchaseableItemQuantity model item =
             ]
 
 
-maxQuantityByPrice : Prices -> Dollar -> Item -> ItemQuantity
-maxQuantityByPrice prices (Dollar cashOnHand) item =
+maxQuantityByPrice : Prices -> Currency -> Item -> ItemQuantity
+maxQuantityByPrice prices (Currency cashOnHand) item =
     case AllDict.get item prices of
-        Just (Dollar foundItemPrice) ->
+        Just (Currency foundItemPrice) ->
             ItemQuantity <| cashOnHand // foundItemPrice
 
         Nothing ->
@@ -286,9 +286,9 @@ displayGameMetadata model =
         , dt [] [ text "Days remaining" ]
         , dd [] [ text <| toString model.daysRemaining ]
         , dt [] [ text "Cash on hand" ]
-        , dd [] [ text <| displayDollars model.cashOnHand ]
+        , dd [] [ text <| displayCurrency model.cashOnHand ]
         , dt [] [ text "Debt" ]
-        , dd [] [ text <| displayDollars model.debt ]
+        , dd [] [ text <| displayCurrency model.debt ]
         , dt [] [ text "Slots available" ]
         , dd [] [ text <| displayItemQuantity (Inventory.availableInventorySpace model.trenchCoat) model.trenchCoat.maxHolding ]
         ]
@@ -432,16 +432,16 @@ displayCurrentPrices prices =
         ]
 
 
-displayPrice : ( Item, Dollar ) -> List (Html Msg)
-displayPrice ( item, dollar ) =
+displayPrice : ( Item, Currency ) -> List (Html Msg)
+displayPrice ( item, currency ) =
     [ dt [] [ text <| toString item ]
     , dd []
         [ button [ onClick <| BuyMax item ] [ text "Buy max" ]
-        , text <| displayDollars dollar
+        , text <| displayCurrency currency
         ]
     ]
 
 
-displayDollars : Dollar -> String
-displayDollars (Dollar amount) =
+displayCurrency : Currency -> String
+displayCurrency (Currency amount) =
     "$" ++ toString amount
