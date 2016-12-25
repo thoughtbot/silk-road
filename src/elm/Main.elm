@@ -6,6 +6,7 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Currency exposing (Currency(..))
 import Item exposing (Item(..))
+import Location exposing (Location(..))
 import ItemQuantity exposing (ItemQuantity(..))
 import Inventory exposing (ItemCollection, Inventory, ItemHolding)
 import Prices exposing (Prices)
@@ -26,20 +27,6 @@ main =
 
 
 -- MODEL
-
-
-type Location
-    = Location1
-    | Location2
-    | Location3
-    | Location4
-    | Location5
-    | Location6
-
-
-allLocations : List Location
-allLocations =
-    [ Location1, Location2, Location3, Location4, Location5, Location6 ]
 
 
 type alias Model =
@@ -378,7 +365,7 @@ priceDropMessage item =
 
 displayLenderOptions : Location -> Html Msg
 displayLenderOptions location =
-    if location == Location1 then
+    if Location.home location then
         div []
             [ button [ onClick PayLender ] [ text "Pay Loan Shark" ]
             ]
@@ -418,7 +405,7 @@ locationName location =
 displayTravelOptions : Html Msg
 displayTravelOptions =
     ul []
-        (List.map travelButton allLocations)
+        (List.map travelButton Location.all)
 
 
 travelButton : Location -> Html Msg
