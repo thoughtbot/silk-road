@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import AllDict exposing (AllDict)
 import Html exposing (..)
@@ -13,12 +13,31 @@ import Prices exposing (Prices)
 import Random
 import Generator
 import Event exposing (Event(..))
+import I18n exposing (Translation(..), translate)
+
+
+port setPageTitle : String -> Cmd a
+
+
+gameStyle : I18n.Language
+gameStyle =
+    I18n.SilkRoad
+
+
+initialModelAndEffects : ( Model, Cmd Msg )
+initialModelAndEffects =
+    ( model
+    , Cmd.batch
+        [ generateNewPricesAndEvents
+        , setPageTitle <| translate gameStyle GameTitle
+        ]
+    )
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( model, generateNewPricesAndEvents )
+        { init = initialModelAndEffects
         , view = view
         , update = update
         , subscriptions = always Sub.none
@@ -245,18 +264,27 @@ maxQuantityByPrice prices (Currency cashOnHand) item =
 
 gameStyles : Attribute a
 gameStyles =
-    style
-        [ ( "fontFamily", "Courier,sans-serif" )
-        , ( "background", "#000" )
-        , ( "color", "#71f442" )
-        , ( "fontSize", "16px" )
-        ]
+    case gameStyle of
+        I18n.DrugWars ->
+            style
+                [ ( "fontFamily", "Courier,sans-serif" )
+                , ( "background", "#000" )
+                , ( "color", "#71f442" )
+                , ( "fontSize", "16px" )
+                ]
+
+        I18n.SilkRoad ->
+            style
+                [ ( "fontFamily", "'Press Start 2P',sans-serif" )
+                , ( "background", "#d5d5b8" )
+                , ( "color", "#40403A" )
+                ]
 
 
 view : Model -> Html Msg
 view model =
     div [ gameStyles ]
-        [ h1 [] [ text "Drug Wars" ]
+        [ h1 [] [ text <| translate gameStyle GameTitle ]
         , displayGame model
         ]
 
@@ -277,20 +305,20 @@ displayRunningGame model =
         [ displayEventMessage model.currentEvent
         , main_ []
             [ section [ class "status" ]
-                [ h2 [] [ text "Status, buddy" ]
+                [ h2 [] [ text <| translate gameStyle StatusHeader ]
                 , displayGameMetadata model
                 , displayLenderOptions model.currentLocation
                 ]
             , section [ class "prices" ]
-                [ h2 [] [ text "Sell" ]
+                [ h2 [] [ text <| translate gameStyle SellItemsHeader ]
                 , displayInventoryOnHand model.inventoryOnHand
                 ]
             , section [ class "prices" ]
-                [ h2 [] [ text "Drug Prices" ]
+                [ h2 [] [ text <| translate gameStyle BuyItemsHeader ]
                 , displayCurrentPrices model.currentPrices
                 ]
             , section [ class "travel" ]
-                [ h2 [] [ text "Take a trip" ]
+                [ h2 [] [ text <| translate gameStyle TravelHeader ]
                 , displayTravelOptions
                 ]
             ]
@@ -300,17 +328,17 @@ displayRunningGame model =
 displayGameMetadata : Model -> Html a
 displayGameMetadata model =
     dl []
-        [ dt [] [ text "Current location" ]
+        [ dt [] [ text <| translate gameStyle CurrentLocationHeader ]
         , dd [] [ text <| locationName model.currentLocation ]
-        , dt [] [ text "Days remaining" ]
+        , dt [] [ text <| translate gameStyle DaysRemainingHeader ]
         , dd [] [ text <| toString model.daysRemaining ]
-        , dt [] [ text "Cash on hand" ]
+        , dt [] [ text <| translate gameStyle CurrencyOnHandHeader ]
         , dd [] [ text <| displayCurrency model.cashOnHand ]
-        , dt [] [ text "Debt" ]
+        , dt [] [ text <| translate gameStyle DebtHeader ]
         , dd [] [ text <| displayCurrency model.debt ]
-        , dt [] [ text "Bank" ]
+        , dt [] [ text <| translate gameStyle BankHeader ]
         , dd [] [ text <| displayCurrency model.cashInBank ]
-        , dt [] [ text "Slots available" ]
+        , dt [] [ text <| translate gameStyle AvailableInventoryHeader ]
         , dd [] [ text <| displayItemQuantity (Inventory.availableInventorySpace model.inventoryOnHand) model.inventoryOnHand.maxHolding ]
         ]
 
@@ -327,78 +355,28 @@ displayEventMessage event =
             div [] []
 
         PriceHike item _ ->
-            flash <| priceHikeMessage item
+            flash <| translate gameStyle (PriceHikeMessage { item = item })
 
         PriceDrop item _ ->
-            flash <| priceDropMessage item
+            flash <| translate gameStyle (PriceDropMessage { item = item })
 
         Mugging ->
-            flash <| "You got mugged! The perpetrator took off with half your cash"
+            flash <| translate gameStyle MuggedMessage
 
-        FindItem item (ItemQuantity amount) ->
-            flash <|
-                ("You found "
-                    ++ toString amount
-                    ++ " "
-                    ++ itemName item
-                    ++ " on the ground"
-                )
+        FindItem item quantity ->
+            flash <| translate gameStyle (FoundItemMessage { item = item, quantity = quantity })
 
         DropItem item _ ->
-            flash <| "Oh no, you dropped a bunch of " ++ itemName item ++ ", bud. Bummer"
-
-
-priceHikeMessage : Item -> String
-priceHikeMessage item =
-    case item of
-        Item1 ->
-            "Cops just busted the local provider. Cocaine prices have spiked"
-
-        Item2 ->
-            "Cops just busted the local provider. Heroin prices have spiked"
-
-        Item3 ->
-            "Production problems have caused a shortage. Acid is super expensive"
-
-        Item4 ->
-            "Bad harvest this year. Weed is super expensive"
-
-        Item5 ->
-            "Local provider has retired. Speed is pricey"
-
-        Item6 ->
-            "Lotta people want Ludes these days. You're gonna have to pay..."
-
-
-priceDropMessage : Item -> String
-priceDropMessage item =
-    case item of
-        Item1 ->
-            "A new shipment has just come in from Columbia. Cocaine prices have plummeted"
-
-        Item2 ->
-            "No one's doing heroin these days. Prices have plummetted"
-
-        Item3 ->
-            "New production equipment has made Acid more plentiful."
-
-        Item4 ->
-            "Bumper crop this year. The bottom has fallen out of weed prices"
-
-        Item5 ->
-            "Someone just dumped speed on the market. Prices are low."
-
-        Item6 ->
-            "Someone just hit up the local phramacy. CHEAP LUDES!!!"
+            flash <| translate gameStyle (DroppedItemMessage { item = item })
 
 
 displayLenderOptions : Location -> Html Msg
 displayLenderOptions location =
     if Location.home location then
         div []
-            [ button [ onClick PayLender ] [ text "Pay Loan Shark" ]
-            , button [ onClick DepositCash ] [ text "Deposit cash" ]
-            , button [ onClick WithdrawCash ] [ text "Withdraw cash" ]
+            [ button [ onClick PayLender ] [ text <| translate gameStyle PayLenderButton ]
+            , button [ onClick DepositCash ] [ text <| translate gameStyle DepositCashButton ]
+            , button [ onClick WithdrawCash ] [ text <| translate gameStyle WithdrawCashButton ]
             ]
     else
         div [] []
@@ -409,28 +387,6 @@ displayScore model =
     div []
         [ text <| "Your score: " ++ (toString <| calculateScore model)
         ]
-
-
-locationName : Location -> String
-locationName location =
-    case location of
-        Location1 ->
-            "the Bronx"
-
-        Location2 ->
-            "Central Park"
-
-        Location3 ->
-            "Coney Island"
-
-        Location4 ->
-            "the Ghetto"
-
-        Location5 ->
-            "Brooklyn"
-
-        Location6 ->
-            "Manhattan"
 
 
 displayTravelOptions : Html Msg
@@ -492,27 +448,15 @@ displayPrice ( item, currency ) =
 
 
 displayCurrency : Currency -> String
-displayCurrency (Currency amount) =
-    "$" ++ toString amount
+displayCurrency currency =
+    translate gameStyle (CurrencyText { currency = currency })
 
 
 itemName : Item -> String
 itemName item =
-    case item of
-        Item1 ->
-            "Cocaine"
+    translate gameStyle (ItemName { item = item })
 
-        Item2 ->
-            "Heroin"
 
-        Item3 ->
-            "Acid"
-
-        Item4 ->
-            "Weed"
-
-        Item5 ->
-            "Speed"
-
-        Item6 ->
-            "Ludes"
+locationName : Location -> String
+locationName location =
+    translate gameStyle (LocationName { location = location })
