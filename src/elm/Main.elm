@@ -34,6 +34,7 @@ type alias Model =
     , currentPrices : Prices
     , currentEvent : Event
     , cashOnHand : Currency
+    , cashInBank : Currency
     , inventoryOnHand : Inventory
     , stash : ItemCollection
     , debt : Currency
@@ -59,6 +60,7 @@ model =
         Prices.initialPrices
         None
         (Currency 2000)
+        Currency.zero
         Inventory.empty
         emptyAllDict
         (Currency 5500)
@@ -74,6 +76,8 @@ type Msg
     | TravelTo Location
     | TravelArrival ( Prices, Event )
     | PayLender
+    | DepositCash
+    | WithdrawCash
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -99,6 +103,12 @@ update msg model =
 
         PayLender ->
             ( payLender model, Cmd.none )
+
+        DepositCash ->
+            ( { model | cashInBank = Currency.add model.cashOnHand model.cashInBank, cashOnHand = Currency.zero }, Cmd.none )
+
+        WithdrawCash ->
+            ( { model | cashInBank = Currency.zero, cashOnHand = Currency.add model.cashOnHand model.cashInBank }, Cmd.none )
 
 
 applyPricesAndEvents : Prices -> Event -> Model -> Model
@@ -203,8 +213,15 @@ buyMax model item =
 
 calculateScore : Model -> Int
 calculateScore model =
-    Currency.subtract model.cashOnHand model.debt
-        |> Currency.toInt
+    let
+        positiveCurrency =
+            Currency.add model.cashInBank model.cashOnHand
+
+        negativeCurrency =
+            model.debt
+    in
+        Currency.subtract positiveCurrency negativeCurrency
+            |> Currency.toInt
 
 
 purchaseableItemQuantity : Model -> Item -> ItemQuantity
@@ -291,6 +308,8 @@ displayGameMetadata model =
         , dd [] [ text <| displayCurrency model.cashOnHand ]
         , dt [] [ text "Debt" ]
         , dd [] [ text <| displayCurrency model.debt ]
+        , dt [] [ text "Bank" ]
+        , dd [] [ text <| displayCurrency model.cashInBank ]
         , dt [] [ text "Slots available" ]
         , dd [] [ text <| displayItemQuantity (Inventory.availableInventorySpace model.inventoryOnHand) model.inventoryOnHand.maxHolding ]
         ]
@@ -378,6 +397,8 @@ displayLenderOptions location =
     if Location.home location then
         div []
             [ button [ onClick PayLender ] [ text "Pay Loan Shark" ]
+            , button [ onClick DepositCash ] [ text "Deposit cash" ]
+            , button [ onClick WithdrawCash ] [ text "Withdraw cash" ]
             ]
     else
         div [] []
