@@ -4,26 +4,37 @@ $icon-font-path: '~bootstrap-sass/assets/fonts/bootstrap/';
 
 // can add Boostrap overrides, additional Sass/CSS below...
 
-$black: #000;
-$green: #71f442;
+html, body {
+  height: 100%;
+}
 
 body {
-  background: $black;
-  color: $green;
-  font-family: Courier, sans-serif;
-  font-size: 16px;
+  #main {
+    height: 100%;
 
-  padding: 2em;
+    & > div {
+      padding: 3em;
+      height: 100%;
+    }
+  }
 
   h1 {
-    font-size: 4em;
+    font-size: 3em;
     text-align: center;
     line-height: 0.8em;
-    margin: 0 0 0.5em;
+    margin: 0 0 1em;
+  }
+
+  h2 {
+    font-size: 2em;
+  }
+
+  h3 {
+    font-size: 1em;
   }
 
   button, input[type=submit] {
-    background: $black;
+    background: rgba(0,0,0, 0.2);
   }
 
   main {
@@ -54,19 +65,14 @@ body {
 
       li {
         list-style-type: none;
+        margin-bottom: 1em;
       }
     }
   }
 
   .flash {
     text-align: center;
-
-    animation: glow .5s infinite alternate;
-  }
-
-  @keyframes glow {
-      to {
-          text-shadow: 0 0 1em white;
-      }
+    max-width: 45em;
+    margin: 0 auto;
   }
 }

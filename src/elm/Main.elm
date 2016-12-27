@@ -2,7 +2,7 @@ module Main exposing (..)
 
 import AllDict exposing (AllDict)
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import Currency exposing (Currency(..))
 import Item exposing (Item(..))
@@ -226,9 +226,19 @@ maxQuantityByPrice prices (Currency cashOnHand) item =
             ItemQuantity 0
 
 
+gameStyles : Attribute a
+gameStyles =
+    style
+        [ ( "fontFamily", "Courier,sans-serif" )
+        , ( "background", "#000" )
+        , ( "color", "#71f442" )
+        , ( "fontSize", "16px" )
+        ]
+
+
 view : Model -> Html Msg
 view model =
-    div []
+    div [ gameStyles ]
         [ h1 [] [ text "Drug Wars" ]
         , displayGame model
         ]
