@@ -38,6 +38,7 @@ type Translation
     | DroppedItemMessage { item : Item }
     | FoundItemMessage { item : Item, quantity : ItemQuantity }
     | PayLenderButton
+    | BorrowMaxButton
     | DepositCashButton
     | WithdrawCashButton
 
@@ -186,6 +187,9 @@ translate language trans =
 
                 PayLenderButton ->
                     TranslationSet "Pay Loan Shark" "Repay Lender"
+
+                BorrowMaxButton ->
+                    TranslationSet "Borrow max from Loan Shark" "Borrow max from Lender"
 
                 DepositCashButton ->
                     TranslationSet "Deposit cash" "Deposit gold"

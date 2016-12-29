@@ -88,6 +88,16 @@ model =
         Running
 
 
+maxDebt : Currency
+maxDebt =
+    Currency.fromInt 13000
+
+
+canBorrowMore : Model -> Bool
+canBorrowMore model =
+    Currency.greaterThan maxDebt model.debt
+
+
 type Msg
     = NoOp
     | BuyMax Item
@@ -97,6 +107,7 @@ type Msg
     | PayLender
     | DepositCash
     | WithdrawCash
+    | BorrowMax
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -122,6 +133,9 @@ update msg model =
 
         PayLender ->
             ( payLender model, Cmd.none )
+
+        BorrowMax ->
+            ( borrowMax model, Cmd.none )
 
         DepositCash ->
             ( { model | cashInBank = Currency.add model.cashOnHand model.cashInBank, cashOnHand = Currency.zero }, Cmd.none )
@@ -174,6 +188,22 @@ payLender model =
             | debt = Currency.subtract model.debt amountToPay
             , cashOnHand = Currency.subtract model.cashOnHand amountToPay
         }
+
+
+borrowableAmount : Model -> Currency
+borrowableAmount model =
+    Currency.subtract maxDebt model.debt
+
+
+borrowMax : Model -> Model
+borrowMax model =
+    if canBorrowMore model then
+        { model
+            | debt = maxDebt
+            , cashOnHand = Currency.add model.cashOnHand (borrowableAmount model)
+        }
+    else
+        model
 
 
 generateNewPricesAndEvents : Cmd Msg
@@ -375,6 +405,7 @@ displayLenderOptions location =
     if Location.home location then
         div []
             [ button [ onClick PayLender ] [ text <| translate gameStyle PayLenderButton ]
+            , button [ onClick BorrowMax ] [ text <| translate gameStyle BorrowMaxButton ]
             , button [ onClick DepositCash ] [ text <| translate gameStyle DepositCashButton ]
             , button [ onClick WithdrawCash ] [ text <| translate gameStyle WithdrawCashButton ]
             ]
