@@ -65,6 +65,7 @@ type alias Model =
 
 type GameState
     = Running
+    | DisplayPrices
     | Finished
 
 
@@ -108,6 +109,8 @@ type Msg
     | DepositCash
     | WithdrawCash
     | BorrowMax
+    | SeePrices
+    | ReturnToGame
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -142,6 +145,12 @@ update msg model =
 
         WithdrawCash ->
             ( { model | cashInBank = Currency.zero, cashOnHand = Currency.add model.cashOnHand model.cashInBank }, Cmd.none )
+
+        SeePrices ->
+            ( { model | gameState = DisplayPrices }, Cmd.none )
+
+        ReturnToGame ->
+            ( { model | gameState = Running }, Cmd.none )
 
 
 applyPricesAndEvents : Prices -> Event -> Model -> Model
@@ -325,6 +334,9 @@ displayGame model =
         Running ->
             displayRunningGame model
 
+        DisplayPrices ->
+            displayPrices
+
         Finished ->
             displayScore model
 
@@ -338,6 +350,9 @@ displayRunningGame model =
                 [ h2 [] [ text <| translate gameStyle StatusHeader ]
                 , displayGameMetadata model
                 , displayLenderOptions model.currentLocation
+                , button
+                    [ onClick SeePrices ]
+                    [ text <| translate gameStyle SeePriceRangesButton ]
                 ]
             , section [ class "prices" ]
                 [ h2 [] [ text <| translate gameStyle SellItemsHeader ]
@@ -370,6 +385,17 @@ displayGameMetadata model =
         , dd [] [ text <| displayCurrency model.cashInBank ]
         , dt [] [ text <| translate gameStyle AvailableInventoryHeader ]
         , dd [] [ text <| displayItemQuantity (Inventory.availableInventorySpace model.inventoryOnHand) model.inventoryOnHand.maxHolding ]
+        ]
+
+
+displayPrices : Html Msg
+displayPrices =
+    div []
+        [ h2 [] [ text <| translate gameStyle PriceRangeHeader ]
+        , dl [] (List.concatMap displayPriceRange Item.all)
+        , button
+            [ onClick ReturnToGame ]
+            [ text <| translate gameStyle ReturnToGameButton ]
         ]
 
 
@@ -476,6 +502,22 @@ displayPrice ( item, currency ) =
         , text <| displayCurrency currency
         ]
     ]
+
+
+displayPriceRange : Item -> List (Html a)
+displayPriceRange item =
+    [ dt [] [ text <| itemName item ]
+    , dd [] [ text <| priceRange item ]
+    ]
+
+
+priceRange : Item -> String
+priceRange item =
+    "("
+        ++ displayCurrency (Item.minPrice item)
+        ++ "-"
+        ++ displayCurrency (Item.maxPrice item)
+        ++ ")"
 
 
 displayCurrency : Currency -> String

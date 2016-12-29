@@ -30,6 +30,7 @@ type Translation
     | BuyItemsHeader
     | TravelHeader
     | AvailableInventoryHeader
+    | PriceRangeHeader
     | ItemName { item : Item }
     | LocationName { location : Location }
     | PriceHikeMessage { item : Item }
@@ -41,6 +42,8 @@ type Translation
     | BorrowMaxButton
     | DepositCashButton
     | WithdrawCashButton
+    | ReturnToGameButton
+    | SeePriceRangesButton
 
 
 translate : Language -> Translation -> String
@@ -87,6 +90,9 @@ translate language trans =
 
                 AvailableInventoryHeader ->
                     TranslationSet "Slots" "Slots"
+
+                PriceRangeHeader ->
+                    TranslationSet "Price Ranges" "Price Ranges"
 
                 ItemName { item } ->
                     case item of
@@ -196,6 +202,12 @@ translate language trans =
 
                 WithdrawCashButton ->
                     TranslationSet "Withdraw cash" "Withdraw gold"
+
+                SeePriceRangesButton ->
+                    TranslationSet "See price ranges" "See price ranges"
+
+                ReturnToGameButton ->
+                    TranslationSet "Return to game" "Return to game"
     in
         case language of
             DrugWars ->
