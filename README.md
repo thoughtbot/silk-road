@@ -11,7 +11,7 @@
 ## Run the application
 
 ```sh
-npm run install
+npm run start
 ```
 
 Once the application has compiled, Webpack will provide a URL to visit to view
