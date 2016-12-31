@@ -44,6 +44,7 @@ type Translation
     | WithdrawCashButton
     | ReturnToGameButton
     | SeePriceRangesButton
+    | RestartGameButton
 
 
 translate : Language -> Translation -> String
@@ -208,6 +209,9 @@ translate language trans =
 
                 ReturnToGameButton ->
                     TranslationSet "Return to game" "Return to game"
+
+                RestartGameButton ->
+                    TranslationSet "Play again?" "Play again?"
     in
         case language of
             DrugWars ->

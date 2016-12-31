@@ -111,6 +111,7 @@ type Msg
     | BorrowMax
     | SeePrices
     | ReturnToGame
+    | RestartGame
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -151,6 +152,9 @@ update msg model =
 
         ReturnToGame ->
             ( { model | gameState = Running }, Cmd.none )
+
+        RestartGame ->
+            initialModelAndEffects
 
 
 applyPricesAndEvents : Prices -> Event -> Model -> Model
@@ -439,10 +443,11 @@ displayLenderOptions location =
         div [] []
 
 
-displayScore : Model -> Html a
+displayScore : Model -> Html Msg
 displayScore model =
-    div []
-        [ text <| "Your score: " ++ (toString <| calculateScore model)
+    div [ class "score" ]
+        [ p [] [ text <| "Your score: " ++ (toString <| calculateScore model) ]
+        , button [ onClick RestartGame ] [ text <| translate gameStyle RestartGameButton ]
         ]
 
 
