@@ -1,8 +1,13 @@
-module ItemQuantity exposing (ItemQuantity(..), add, subtract, minimum, map, map2)
+module ItemQuantity exposing (ItemQuantity(..), zero, add, subtract, minimum, map, map2)
 
 
 type ItemQuantity
     = ItemQuantity Int
+
+
+zero : ItemQuantity
+zero =
+    ItemQuantity 0
 
 
 minimum : List ItemQuantity -> Maybe ItemQuantity

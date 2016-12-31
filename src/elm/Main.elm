@@ -55,7 +55,7 @@ type alias Model =
     , cashOnHand : Currency
     , cashInBank : Currency
     , inventoryOnHand : Inventory
-    , stash : ItemCollection
+    , stash : Inventory
     , debt : Currency
     , bankAccountBalance : Currency
     , daysRemaining : Int
@@ -69,11 +69,6 @@ type GameState
     | Finished
 
 
-emptyAllDict : AllDict Item b Int
-emptyAllDict =
-    AllDict.empty Item.position
-
-
 model : Model
 model =
     Model Location1
@@ -82,7 +77,7 @@ model =
         (Currency 2000)
         Currency.zero
         Inventory.empty
-        emptyAllDict
+        Inventory.unlimited
         (Currency 5500)
         Currency.zero
         31
@@ -112,6 +107,7 @@ type Msg
     | SeePrices
     | ReturnToGame
     | RestartGame
+    | TransferToStash Item
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -155,6 +151,9 @@ update msg model =
 
         RestartGame ->
             initialModelAndEffects
+
+        TransferToStash item ->
+            ( transferToStash model item, Cmd.none )
 
 
 applyPricesAndEvents : Prices -> Event -> Model -> Model
@@ -273,6 +272,21 @@ buyMax model item =
         { model | cashOnHand = Currency.subtract model.cashOnHand totalPurchasePrice, inventoryOnHand = newInventoryOnHand }
 
 
+transferToStash : Model -> Item -> Model
+transferToStash model item =
+    let
+        newStash =
+            Inventory.addItems item quantityToTransfer model.stash
+
+        ( _, quantityToTransfer ) =
+            Inventory.lookupHolding model.inventoryOnHand.items item
+
+        newInventory =
+            Inventory.removeAllItem item model.inventoryOnHand
+    in
+        { model | stash = newStash, inventoryOnHand = newInventory }
+
+
 calculateScore : Model -> Int
 calculateScore model =
     let
@@ -288,11 +302,16 @@ calculateScore model =
 
 purchaseableItemQuantity : Model -> Item -> ItemQuantity
 purchaseableItemQuantity model item =
-    Maybe.withDefault (ItemQuantity 0) <|
-        ItemQuantity.minimum
-            [ maxQuantityByPrice model.currentPrices model.cashOnHand item
-            , Inventory.availableInventorySpace model.inventoryOnHand
-            ]
+    case Inventory.availableInventorySpace model.inventoryOnHand of
+        Nothing ->
+            maxQuantityByPrice model.currentPrices model.cashOnHand item
+
+        Just v ->
+            Maybe.withDefault (ItemQuantity 0) <|
+                ItemQuantity.minimum
+                    [ maxQuantityByPrice model.currentPrices model.cashOnHand item
+                    , v
+                    ]
 
 
 maxQuantityByPrice : Prices -> Currency -> Item -> ItemQuantity
@@ -361,6 +380,7 @@ displayRunningGame model =
             , section [ class "prices" ]
                 [ h2 [] [ text <| translate gameStyle SellItemsHeader ]
                 , displayInventoryOnHand model.inventoryOnHand
+                , displayInventoryOnHand model.stash
                 ]
             , section [ class "prices" ]
                 [ h2 [] [ text <| translate gameStyle BuyItemsHeader ]
@@ -472,9 +492,14 @@ displayInventoryOnHand inventory =
     dl [] (displayItems inventory.items)
 
 
-displayItemQuantity : ItemQuantity -> ItemQuantity -> String
-displayItemQuantity (ItemQuantity available) (ItemQuantity maxHolding) =
-    (toString available) ++ "/" ++ (toString maxHolding)
+displayItemQuantity : Maybe ItemQuantity -> Maybe ItemQuantity -> String
+displayItemQuantity available maxHolding =
+    case ( available, maxHolding ) of
+        ( Just (ItemQuantity available_), Just (ItemQuantity maxHolding_) ) ->
+            (toString available_) ++ "/" ++ (toString maxHolding_)
+
+        ( _, _ ) ->
+            ""
 
 
 displayItems : ItemCollection -> List (Html Msg)
@@ -487,6 +512,7 @@ displayItem ( item, ItemQuantity count ) =
     [ dt [] [ text <| itemName item ]
     , dd []
         [ button [ onClick <| SellAll item ] [ text "Sell all" ]
+        , button [ onClick <| TransferToStash item ] [ text "Transfer all to stash" ]
         , text <| toString count
         ]
     ]

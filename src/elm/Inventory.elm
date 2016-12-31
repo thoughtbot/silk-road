@@ -15,7 +15,7 @@ type alias ItemHolding =
 
 type alias Inventory =
     { items : ItemCollection
-    , maxHolding : ItemQuantity
+    , maxHolding : Maybe ItemQuantity
     }
 
 
@@ -34,9 +34,14 @@ addItems : Item -> ItemQuantity -> Inventory -> Inventory
 addItems item quantity inventory =
     let
         quantityToAdd =
-            ItemQuantity.map2 min
-                quantity
-                (availableInventorySpace inventory)
+            case availableInventorySpace inventory of
+                Nothing ->
+                    quantity
+
+                Just availableSpace ->
+                    ItemQuantity.map2 min
+                        quantity
+                        availableSpace
 
         newTotal =
             ItemQuantity.add quantityToAdd (quantityOfItem inventory.items item)
@@ -54,9 +59,14 @@ removeAllItem item inventory =
     { inventory | items = AllDict.remove item inventory.items }
 
 
-availableInventorySpace : Inventory -> ItemQuantity
+availableInventorySpace : Inventory -> Maybe ItemQuantity
 availableInventorySpace inventory =
-    ItemQuantity.subtract inventory.maxHolding (slotsUsed inventory.items)
+    case inventory.maxHolding of
+        Nothing ->
+            Nothing
+
+        Just maxHolding ->
+            Just <| ItemQuantity.subtract maxHolding (slotsUsed inventory.items)
 
 
 slotsUsed : ItemCollection -> ItemQuantity
@@ -71,4 +81,9 @@ emptyAllDict =
 
 empty : Inventory
 empty =
-    (Inventory emptyAllDict (ItemQuantity 100))
+    (Inventory emptyAllDict (Just <| ItemQuantity 100))
+
+
+unlimited : Inventory
+unlimited =
+    (Inventory emptyAllDict Nothing)
