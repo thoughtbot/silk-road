@@ -107,7 +107,8 @@ type Msg
     | SeePrices
     | ReturnToGame
     | RestartGame
-    | TransferToStash Item
+    | TransferToStorage Item
+    | TransferToOnHand Item
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -152,8 +153,11 @@ update msg model =
         RestartGame ->
             initialModelAndEffects
 
-        TransferToStash item ->
-            ( transferToStash model item, Cmd.none )
+        TransferToStorage item ->
+            ( transferToStorage model item, Cmd.none )
+
+        TransferToOnHand item ->
+            ( transferToOnHand model item, Cmd.none )
 
 
 applyPricesAndEvents : Prices -> Event -> Model -> Model
@@ -272,8 +276,8 @@ buyMax model item =
         { model | cashOnHand = Currency.subtract model.cashOnHand totalPurchasePrice, inventoryOnHand = newInventoryOnHand }
 
 
-transferToStash : Model -> Item -> Model
-transferToStash model item =
+transferToStorage : Model -> Item -> Model
+transferToStorage model item =
     let
         newStash =
             Inventory.addItems item quantityToTransfer model.stash
@@ -283,6 +287,26 @@ transferToStash model item =
 
         newInventory =
             Inventory.removeAllItem item model.inventoryOnHand
+    in
+        { model | stash = newStash, inventoryOnHand = newInventory }
+
+
+transferToOnHand : Model -> Item -> Model
+transferToOnHand model item =
+    let
+        newStash =
+            Inventory.removeItem item quantityToTransfer model.stash
+
+        ( _, heldQuantity ) =
+            Inventory.lookupHolding model.stash.items item
+
+        quantityToTransfer =
+            ItemQuantity.map2 min
+                heldQuantity
+                (Maybe.withDefault heldQuantity <| Inventory.availableInventorySpace model.inventoryOnHand)
+
+        newInventory =
+            Inventory.addItems item quantityToTransfer model.inventoryOnHand
     in
         { model | stash = newStash, inventoryOnHand = newInventory }
 
@@ -380,7 +404,7 @@ displayRunningGame model =
             , section [ class "prices" ]
                 [ h2 [] [ text <| translate gameStyle SellItemsHeader ]
                 , displayInventoryOnHand model.inventoryOnHand
-                , displayInventoryOnHand model.stash
+                , displayInventoryInStorage model.stash
                 ]
             , section [ class "prices" ]
                 [ h2 [] [ text <| translate gameStyle BuyItemsHeader ]
@@ -489,7 +513,12 @@ travelButton location =
 
 displayInventoryOnHand : Inventory -> Html Msg
 displayInventoryOnHand inventory =
-    dl [] (displayItems inventory.items)
+    dl [] (displayItems displayItemOnHand inventory.items)
+
+
+displayInventoryInStorage : Inventory -> Html Msg
+displayInventoryInStorage inventory =
+    dl [] (displayItems displayItemInStash inventory.items)
 
 
 displayItemQuantity : Maybe ItemQuantity -> Maybe ItemQuantity -> String
@@ -502,17 +531,27 @@ displayItemQuantity available maxHolding =
             ""
 
 
-displayItems : ItemCollection -> List (Html Msg)
-displayItems stash =
-    List.concatMap (displayItem << Inventory.lookupHolding stash) Item.all
+displayItems : (ItemHolding -> List (Html Msg)) -> ItemCollection -> List (Html Msg)
+displayItems f itemCollection =
+    List.concatMap (f << Inventory.lookupHolding itemCollection) Item.all
 
 
-displayItem : ItemHolding -> List (Html Msg)
-displayItem ( item, ItemQuantity count ) =
+displayItemOnHand : ItemHolding -> List (Html Msg)
+displayItemOnHand ( item, ItemQuantity count ) =
     [ dt [] [ text <| itemName item ]
     , dd []
         [ button [ onClick <| SellAll item ] [ text "Sell all" ]
-        , button [ onClick <| TransferToStash item ] [ text "Transfer all to stash" ]
+        , button [ onClick <| TransferToStorage item ] [ text <| translate gameStyle TransferToStorageButton ]
+        , text <| toString count
+        ]
+    ]
+
+
+displayItemInStash : ItemHolding -> List (Html Msg)
+displayItemInStash ( item, ItemQuantity count ) =
+    [ dt [] [ text <| itemName item ]
+    , dd []
+        [ button [ onClick <| TransferToOnHand item ] [ text <| translate gameStyle TransferToOnHandButton ]
         , text <| toString count
         ]
     ]

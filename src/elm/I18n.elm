@@ -45,6 +45,8 @@ type Translation
     | ReturnToGameButton
     | SeePriceRangesButton
     | RestartGameButton
+    | TransferToStorageButton
+    | TransferToOnHandButton
 
 
 translate : Language -> Translation -> String
@@ -212,6 +214,12 @@ translate language trans =
 
                 RestartGameButton ->
                     TranslationSet "Play again?" "Play again?"
+
+                TransferToStorageButton ->
+                    TranslationSet "Transfer to stash" "Transfer to storage"
+
+                TransferToOnHandButton ->
+                    TranslationSet "Transfer to trenchcoat" "Remvoe from storage"
     in
         case language of
             DrugWars ->

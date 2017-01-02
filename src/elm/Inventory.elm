@@ -59,14 +59,14 @@ removeAllItem item inventory =
     { inventory | items = AllDict.remove item inventory.items }
 
 
+removeItem : Item -> ItemQuantity -> Inventory -> Inventory
+removeItem item quantity inventory =
+    { inventory | items = AllDict.update item (Maybe.map (flip ItemQuantity.subtract quantity)) inventory.items }
+
+
 availableInventorySpace : Inventory -> Maybe ItemQuantity
 availableInventorySpace inventory =
-    case inventory.maxHolding of
-        Nothing ->
-            Nothing
-
-        Just maxHolding ->
-            Just <| ItemQuantity.subtract maxHolding (slotsUsed inventory.items)
+    Maybe.map (flip ItemQuantity.subtract (slotsUsed inventory.items)) inventory.maxHolding
 
 
 slotsUsed : ItemCollection -> ItemQuantity
