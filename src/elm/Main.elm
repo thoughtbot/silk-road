@@ -55,7 +55,7 @@ type alias Model =
     , cashOnHand : Currency
     , cashInBank : Currency
     , inventoryOnHand : Inventory
-    , stash : Inventory
+    , storage : Inventory
     , debt : Currency
     , bankAccountBalance : Currency
     , daysRemaining : Int
@@ -279,8 +279,8 @@ buyMax model item =
 transferToStorage : Model -> Item -> Model
 transferToStorage model item =
     let
-        newStash =
-            Inventory.addItems item quantityToTransfer model.stash
+        newStorage =
+            Inventory.addItems item quantityToTransfer model.storage
 
         ( _, quantityToTransfer ) =
             Inventory.lookupHolding model.inventoryOnHand.items item
@@ -288,17 +288,17 @@ transferToStorage model item =
         newInventory =
             Inventory.removeAllItem item model.inventoryOnHand
     in
-        { model | stash = newStash, inventoryOnHand = newInventory }
+        { model | storage = newStorage, inventoryOnHand = newInventory }
 
 
 transferToOnHand : Model -> Item -> Model
 transferToOnHand model item =
     let
-        newStash =
-            Inventory.removeItem item quantityToTransfer model.stash
+        newStorage =
+            Inventory.removeItem item quantityToTransfer model.storage
 
         ( _, heldQuantity ) =
-            Inventory.lookupHolding model.stash.items item
+            Inventory.lookupHolding model.storage.items item
 
         quantityToTransfer =
             ItemQuantity.map2 min
@@ -308,7 +308,7 @@ transferToOnHand model item =
         newInventory =
             Inventory.addItems item quantityToTransfer model.inventoryOnHand
     in
-        { model | stash = newStash, inventoryOnHand = newInventory }
+        { model | storage = newStorage, inventoryOnHand = newInventory }
 
 
 calculateScore : Model -> Int
@@ -404,7 +404,7 @@ displayRunningGame model =
             , section [ class "prices" ]
                 [ h2 [] [ text <| translate gameStyle SellItemsHeader ]
                 , displayInventoryOnHand model.inventoryOnHand
-                , displayInventoryInStorage model.stash
+                , displayInventoryInStorage model.storage
                 ]
             , section [ class "prices" ]
                 [ h2 [] [ text <| translate gameStyle BuyItemsHeader ]
@@ -518,7 +518,7 @@ displayInventoryOnHand inventory =
 
 displayInventoryInStorage : Inventory -> Html Msg
 displayInventoryInStorage inventory =
-    dl [] (displayItems displayItemInStash inventory.items)
+    dl [] (displayItems displayItemInStorage inventory.items)
 
 
 displayItemQuantity : Maybe ItemQuantity -> Maybe ItemQuantity -> String
@@ -547,8 +547,8 @@ displayItemOnHand ( item, ItemQuantity count ) =
     ]
 
 
-displayItemInStash : ItemHolding -> List (Html Msg)
-displayItemInStash ( item, ItemQuantity count ) =
+displayItemInStorage : ItemHolding -> List (Html Msg)
+displayItemInStorage ( item, ItemQuantity count ) =
     [ dt [] [ text <| itemName item ]
     , dd []
         [ button [ onClick <| TransferToOnHand item ] [ text <| translate gameStyle TransferToOnHandButton ]
