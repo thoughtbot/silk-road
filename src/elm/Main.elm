@@ -13,7 +13,7 @@ import Prices exposing (Prices)
 import Random
 import Generator
 import Event exposing (Event(..))
-import I18n exposing (Translation(..), translate)
+import I18n exposing (Translation(..))
 
 
 port setPageTitle : String -> Cmd a
@@ -24,12 +24,17 @@ gameStyle =
     I18n.SilkRoad
 
 
+translate : Translation -> String
+translate =
+    I18n.translate gameStyle
+
+
 initialModelAndEffects : ( Model, Cmd Msg )
 initialModelAndEffects =
     ( model
     , Cmd.batch
         [ generateNewPricesAndEvents
-        , setPageTitle <| translate gameStyle GameTitle
+        , setPageTitle <| translate GameTitle
         ]
     )
 
@@ -327,7 +332,7 @@ gameStyles =
 view : Model -> Html Msg
 view model =
     div [ gameStyles ]
-        [ h1 [] [ text <| translate gameStyle GameTitle ]
+        [ h1 [] [ text <| translate GameTitle ]
         , displayGame model
         ]
 
@@ -351,23 +356,23 @@ displayRunningGame model =
         [ displayEventMessage model.currentEvent
         , main_ []
             [ section [ class "status" ]
-                [ h2 [] [ text <| translate gameStyle StatusHeader ]
+                [ h2 [] [ text <| translate StatusHeader ]
                 , displayGameMetadata model
                 , displayLenderOptions model.currentLocation
                 , button
                     [ onClick SeePrices ]
-                    [ text <| translate gameStyle SeePriceRangesButton ]
+                    [ text <| translate SeePriceRangesButton ]
                 ]
             , section [ class "prices" ]
-                [ h2 [] [ text <| translate gameStyle SellItemsHeader ]
+                [ h2 [] [ text <| translate SellItemsHeader ]
                 , displayInventoryOnHand model.inventoryOnHand
                 ]
             , section [ class "prices" ]
-                [ h2 [] [ text <| translate gameStyle BuyItemsHeader ]
+                [ h2 [] [ text <| translate BuyItemsHeader ]
                 , displayCurrentPrices model.currentPrices
                 ]
             , section [ class "travel" ]
-                [ h2 [] [ text <| translate gameStyle TravelHeader ]
+                [ h2 [] [ text <| translate TravelHeader ]
                 , displayTravelOptions
                 ]
             ]
@@ -377,17 +382,17 @@ displayRunningGame model =
 displayGameMetadata : Model -> Html a
 displayGameMetadata model =
     dl []
-        [ dt [] [ text <| translate gameStyle CurrentLocationHeader ]
+        [ dt [] [ text <| translate CurrentLocationHeader ]
         , dd [] [ text <| locationName model.currentLocation ]
-        , dt [] [ text <| translate gameStyle DaysRemainingHeader ]
+        , dt [] [ text <| translate DaysRemainingHeader ]
         , dd [] [ text <| toString model.daysRemaining ]
-        , dt [] [ text <| translate gameStyle CurrencyOnHandHeader ]
+        , dt [] [ text <| translate CurrencyOnHandHeader ]
         , dd [] [ text <| displayCurrency model.cashOnHand ]
-        , dt [] [ text <| translate gameStyle DebtHeader ]
+        , dt [] [ text <| translate DebtHeader ]
         , dd [] [ text <| displayCurrency model.debt ]
-        , dt [] [ text <| translate gameStyle BankHeader ]
+        , dt [] [ text <| translate BankHeader ]
         , dd [] [ text <| displayCurrency model.cashInBank ]
-        , dt [] [ text <| translate gameStyle AvailableInventoryHeader ]
+        , dt [] [ text <| translate AvailableInventoryHeader ]
         , dd [] [ text <| displayItemQuantity (Inventory.availableInventorySpace model.inventoryOnHand) model.inventoryOnHand.maxHolding ]
         ]
 
@@ -395,11 +400,11 @@ displayGameMetadata model =
 displayPrices : Html Msg
 displayPrices =
     div []
-        [ h2 [] [ text <| translate gameStyle PriceRangeHeader ]
+        [ h2 [] [ text <| translate PriceRangeHeader ]
         , dl [] (List.concatMap displayPriceRange Item.all)
         , button
             [ onClick ReturnToGame ]
-            [ text <| translate gameStyle ReturnToGameButton ]
+            [ text <| translate ReturnToGameButton ]
         ]
 
 
@@ -415,29 +420,29 @@ displayEventMessage event =
             div [] []
 
         PriceHike item _ ->
-            flash <| translate gameStyle (PriceHikeMessage { item = item })
+            flash <| translate (PriceHikeMessage { item = item })
 
         PriceDrop item _ ->
-            flash <| translate gameStyle (PriceDropMessage { item = item })
+            flash <| translate (PriceDropMessage { item = item })
 
         Mugging ->
-            flash <| translate gameStyle MuggedMessage
+            flash <| translate MuggedMessage
 
         FindItem item quantity ->
-            flash <| translate gameStyle (FoundItemMessage { item = item, quantity = quantity })
+            flash <| translate (FoundItemMessage { item = item, quantity = quantity })
 
         DropItem item _ ->
-            flash <| translate gameStyle (DroppedItemMessage { item = item })
+            flash <| translate (DroppedItemMessage { item = item })
 
 
 displayLenderOptions : Location -> Html Msg
 displayLenderOptions location =
     if Location.home location then
         div []
-            [ button [ onClick PayLender ] [ text <| translate gameStyle PayLenderButton ]
-            , button [ onClick BorrowMax ] [ text <| translate gameStyle BorrowMaxButton ]
-            , button [ onClick DepositCash ] [ text <| translate gameStyle DepositCashButton ]
-            , button [ onClick WithdrawCash ] [ text <| translate gameStyle WithdrawCashButton ]
+            [ button [ onClick PayLender ] [ text <| translate PayLenderButton ]
+            , button [ onClick BorrowMax ] [ text <| translate BorrowMaxButton ]
+            , button [ onClick DepositCash ] [ text <| translate DepositCashButton ]
+            , button [ onClick WithdrawCash ] [ text <| translate WithdrawCashButton ]
             ]
     else
         div [] []
@@ -447,7 +452,7 @@ displayScore : Model -> Html Msg
 displayScore model =
     div [ class "score" ]
         [ p [] [ text <| "Your score: " ++ (toString <| calculateScore model) ]
-        , button [ onClick RestartGame ] [ text <| translate gameStyle RestartGameButton ]
+        , button [ onClick RestartGame ] [ text <| translate RestartGameButton ]
         ]
 
 
@@ -527,14 +532,14 @@ priceRange item =
 
 displayCurrency : Currency -> String
 displayCurrency currency =
-    translate gameStyle (CurrencyText { currency = currency })
+    translate (CurrencyText { currency = currency })
 
 
 itemName : Item -> String
 itemName item =
-    translate gameStyle (ItemName { item = item })
+    translate (ItemName { item = item })
 
 
 locationName : Location -> String
 locationName location =
-    translate gameStyle (LocationName { location = location })
+    translate (LocationName { location = location })
